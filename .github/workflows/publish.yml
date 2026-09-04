@@ -42,6 +42,9 @@ jobs:
           test -n "$ROBLOX_PLACE_ID"
 
           curl --fail-with-body --location \
+            --retry 5 \
+            --retry-all-errors \
+            --retry-delay 15 \
             --request POST \
             "https://apis.roblox.com/universes/v1/${ROBLOX_UNIVERSE_ID}/places/${ROBLOX_PLACE_ID}/versions?versionType=Published" \
             --header "x-api-key: ${ROBLOX_API_KEY}" \
