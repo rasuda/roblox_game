@@ -13,7 +13,7 @@ Primeira versão do Empire State Building:
 - entrada, marquises e plataformas de observação;
 - torre, antena e luz de sinalização;
 - praça, calçadas e ponto inicial com visão frontal.
-- tapete voador controlável pelo joystick, com botões para subir e descer.
+- tapete voador arco-íris gratuito, controlável pelo joystick, com botões para subir e descer.
 
 O interior ainda não faz parte desta primeira versão.
 

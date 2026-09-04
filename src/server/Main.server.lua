@@ -174,13 +174,25 @@ carpet.Name = "MagicCarpet"
 carpet.Parent = world
 
 local carpetStart = Vector3.new(30, 4, 154)
-local carpetBase = createPart(carpet, "CarpetBase", Vector3.new(10, 0.45, 15), carpetStart, Color3.fromRGB(114, 31, 139), Enum.Material.Fabric)
+local carpetBase = createPart(carpet, "CarpetBase", Vector3.new(10.5, 0.45, 15.5), carpetStart, Color3.fromRGB(244, 190, 47), Enum.Material.Fabric)
 carpetBase.CanCollide = true
 carpet.PrimaryPart = carpetBase
 
-createPart(carpet, "CenterPattern", Vector3.new(6.5, 0.12, 10.5), carpetStart + Vector3.new(0, 0.29, 0), Color3.fromRGB(234, 174, 45), Enum.Material.Fabric).CanCollide = false
-createPart(carpet, "FrontBorder", Vector3.new(10.2, 0.2, 1), carpetStart + Vector3.new(0, 0.32, -7), Color3.fromRGB(39, 151, 174), Enum.Material.Fabric).CanCollide = false
-createPart(carpet, "BackBorder", Vector3.new(10.2, 0.2, 1), carpetStart + Vector3.new(0, 0.32, 7), Color3.fromRGB(39, 151, 174), Enum.Material.Fabric).CanCollide = false
+local rainbowColors = {
+	Color3.fromRGB(232, 48, 54),
+	Color3.fromRGB(245, 126, 31),
+	Color3.fromRGB(250, 211, 44),
+	Color3.fromRGB(75, 184, 72),
+	Color3.fromRGB(48, 145, 218),
+	Color3.fromRGB(76, 79, 181),
+	Color3.fromRGB(153, 67, 173),
+}
+
+for index, color in ipairs(rainbowColors) do
+	local stripeZ = -6.3 + (index - 1) * 2.1
+	local stripe = createPart(carpet, "RainbowStripe", Vector3.new(9.8, 0.16, 2.08), carpetStart + Vector3.new(0, 0.3, stripeZ), color, Enum.Material.Fabric)
+	stripe.CanCollide = false
+end
 
 for _, x in ipairs({-4.5, -2.7, -0.9, 0.9, 2.7, 4.5}) do
 	for _, z in ipairs({-8, 8}) do
@@ -203,7 +215,7 @@ carpetSeat.Parent = carpet
 local carpetPrompt = Instance.new("ProximityPrompt")
 carpetPrompt.Name = "FlyPrompt"
 carpetPrompt.ActionText = "Voar"
-carpetPrompt.ObjectText = "Tapete voador"
+carpetPrompt.ObjectText = "Tapete voador arco-íris — grátis"
 carpetPrompt.HoldDuration = 0
 carpetPrompt.MaxActivationDistance = 12
 carpetPrompt.RequiresLineOfSight = false
