@@ -14,6 +14,7 @@ Primeira versão do Empire State Building:
 - torre, antena e luz de sinalização;
 - praça, calçadas e ponto inicial com visão frontal.
 - tapete voador arco-íris gratuito, controlável pelo joystick, com botões para subir e descer.
+- VW Nivus GTS 2026 dirigível, com carroceria cupê, teto preto, rodas GTS e iluminação em LED.
 
 O interior ainda não faz parte desta primeira versão.
 
