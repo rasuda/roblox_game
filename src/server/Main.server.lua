@@ -1,5 +1,7 @@
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local WORLD_NAME = "EmpireStateWorld"
@@ -17,6 +19,13 @@ end
 local world = Instance.new("Folder")
 world.Name = WORLD_NAME
 world.Parent = Workspace
+
+local carpetControl = ReplicatedStorage:FindFirstChild("MagicCarpetControl")
+if not carpetControl then
+	carpetControl = Instance.new("RemoteEvent")
+	carpetControl.Name = "MagicCarpetControl"
+	carpetControl.Parent = ReplicatedStorage
+end
 
 local building = Instance.new("Model")
 building.Name = "EmpireStateBuilding"
@@ -158,6 +167,107 @@ spawn.Neutral = true
 spawn.Material = Enum.Material.Concrete
 spawn.Color = Color3.fromRGB(210, 210, 205)
 spawn.Parent = world
+
+-- Tapete voador: o VehicleSeat fornece direção pelo joystick do Roblox.
+local carpet = Instance.new("Model")
+carpet.Name = "MagicCarpet"
+carpet.Parent = world
+
+local carpetStart = Vector3.new(30, 4, 154)
+local carpetBase = createPart(carpet, "CarpetBase", Vector3.new(10, 0.45, 15), carpetStart, Color3.fromRGB(114, 31, 139), Enum.Material.Fabric)
+carpetBase.CanCollide = true
+carpet.PrimaryPart = carpetBase
+
+createPart(carpet, "CenterPattern", Vector3.new(6.5, 0.12, 10.5), carpetStart + Vector3.new(0, 0.29, 0), Color3.fromRGB(234, 174, 45), Enum.Material.Fabric).CanCollide = false
+createPart(carpet, "FrontBorder", Vector3.new(10.2, 0.2, 1), carpetStart + Vector3.new(0, 0.32, -7), Color3.fromRGB(39, 151, 174), Enum.Material.Fabric).CanCollide = false
+createPart(carpet, "BackBorder", Vector3.new(10.2, 0.2, 1), carpetStart + Vector3.new(0, 0.32, 7), Color3.fromRGB(39, 151, 174), Enum.Material.Fabric).CanCollide = false
+
+for _, x in ipairs({-4.5, -2.7, -0.9, 0.9, 2.7, 4.5}) do
+	for _, z in ipairs({-8, 8}) do
+		local tassel = createPart(carpet, "Tassel", Vector3.new(0.28, 0.28, 2), carpetStart + Vector3.new(x, 0, z), Color3.fromRGB(244, 200, 73), Enum.Material.Fabric)
+		tassel.CanCollide = false
+	end
+end
+
+local carpetSeat = Instance.new("VehicleSeat")
+carpetSeat.Name = "CarpetSeat"
+carpetSeat.Anchored = true
+carpetSeat.CanCollide = false
+carpetSeat.Transparency = 1
+carpetSeat.Size = Vector3.new(4, 1, 4)
+carpetSeat.Position = carpetStart + Vector3.new(0, 1, 1)
+carpetSeat.MaxSpeed = 45
+carpetSeat.TurnSpeed = 1.8
+carpetSeat.Parent = carpet
+
+local carpetPrompt = Instance.new("ProximityPrompt")
+carpetPrompt.Name = "FlyPrompt"
+carpetPrompt.ActionText = "Voar"
+carpetPrompt.ObjectText = "Tapete voador"
+carpetPrompt.HoldDuration = 0
+carpetPrompt.MaxActivationDistance = 12
+carpetPrompt.RequiresLineOfSight = false
+carpetPrompt.Parent = carpetBase
+
+local carpetPosition = carpetStart
+local carpetHeading = math.rad(180)
+local carpetVertical = 0
+
+local function carpetPlayer()
+	local humanoid = carpetSeat.Occupant
+	if not humanoid then
+		return nil
+	end
+	return Players:GetPlayerFromCharacter(humanoid.Parent)
+end
+
+carpetPrompt.Triggered:Connect(function(player)
+	if carpetSeat.Occupant then
+		return
+	end
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if humanoid then
+		carpetSeat:Sit(humanoid)
+	end
+end)
+
+carpetSeat:GetPropertyChangedSignal("Occupant"):Connect(function()
+	carpetVertical = 0
+	carpetPrompt.Enabled = carpetSeat.Occupant == nil
+end)
+
+carpetControl.OnServerEvent:Connect(function(player, action, value)
+	if carpetPlayer() ~= player then
+		return
+	end
+
+	if action == "vertical" and type(value) == "number" then
+		carpetVertical = math.clamp(value, -1, 1)
+	elseif action == "exit" then
+		local humanoid = carpetSeat.Occupant
+		if humanoid then
+			humanoid.Sit = false
+		end
+	end
+end)
+
+RunService.Heartbeat:Connect(function(deltaTime)
+	if not carpetSeat.Occupant then
+		return
+	end
+
+	local throttle = carpetSeat.ThrottleFloat
+	local steering = carpetSeat.SteerFloat
+	carpetHeading += -steering * 1.8 * deltaTime
+
+	local direction = CFrame.Angles(0, carpetHeading, 0).LookVector
+	carpetPosition += direction * throttle * 45 * deltaTime
+	carpetPosition += Vector3.new(0, carpetVertical * 28 * deltaTime, 0)
+	carpetPosition = Vector3.new(carpetPosition.X, math.clamp(carpetPosition.Y, 4, 410), carpetPosition.Z)
+
+	carpet:PivotTo(CFrame.new(carpetPosition) * CFrame.Angles(0, carpetHeading, 0))
+end)
 
 -- Iluminação de fim de tarde para destacar pedra, vidro e luzes internas.
 Lighting.ClockTime = 17.3

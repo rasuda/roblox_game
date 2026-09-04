@@ -7,6 +7,15 @@
       "Main": {
         "$path": "src/server/Main.server.lua"
       }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "MagicCarpetController": {
+          "$path": "src/client/MagicCarpetController.client.lua"
+        }
+      }
     }
   }
 }
