@@ -1,13 +1,20 @@
 # roblox_game
 
-Primeira versão mínima para validar o fluxo entre GitHub, Rojo e Roblox Studio.
+Jogo Roblox desenvolvido por código e publicado automaticamente com Rojo,
+GitHub Actions e Roblox Open Cloud.
 
-## O que aparece no teste
+## Versão atual
 
-- uma plataforma verde;
-- um ponto de nascimento laranja;
-- três blocos coloridos;
-- mensagens de confirmação na janela **Output** do Roblox Studio.
+Primeira versão do Empire State Building:
+
+- exterior Art Déco escalonado;
+- fachada de pedra com janelas em quatro lados;
+- algumas janelas iluminadas;
+- entrada, marquises e plataformas de observação;
+- torre, antena e luz de sinalização;
+- praça, calçadas e ponto inicial com visão frontal.
+
+O interior ainda não faz parte desta primeira versão.
 
 ## Como testar com Rojo
 
@@ -19,16 +26,9 @@ Primeira versão mínima para validar o fluxo entre GitHub, Rojo e Roblox Studio
    rojo serve
    ```
 
-4. No Roblox Studio, crie ou abra uma experiência vazia.
+4. No Roblox Studio, abra a experiência.
 5. Abra o plugin Rojo, conecte em `localhost:34872` e sincronize.
 6. Clique em **Play**.
-
-O script `Main` aparecerá em `ServerScriptService`. Durante o teste, a janela
-**Output** deve mostrar:
-
-```text
-[roblox_game] Mundo de validação carregado com sucesso.
-```
 
 ## Alternativa: gerar um arquivo para abrir no Studio
 
