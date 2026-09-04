@@ -1,0 +1,49 @@
+name: Publish Roblox place
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install Rojo
+        run: |
+          curl --fail --location --silent --show-error \
+            --output rojo.zip \
+            https://github.com/rojo-rbx/rojo/releases/download/v7.7.0/rojo-7.7.0-linux-x86_64.zip
+          unzip -q rojo.zip
+          chmod +x rojo
+          sudo mv rojo /usr/local/bin/rojo
+          rojo --version
+
+      - name: Build Roblox place
+        run: rojo build default.project.json --output roblox_game.rbxlx
+
+      - name: Publish to Roblox
+        env:
+          ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+          ROBLOX_UNIVERSE_ID: ${{ secrets.ROBLOX_UNIVERSE_ID }}
+          ROBLOX_PLACE_ID: ${{ secrets.ROBLOX_PLACE_ID }}
+        run: |
+          test -n "$ROBLOX_API_KEY"
+          test -n "$ROBLOX_UNIVERSE_ID"
+          test -n "$ROBLOX_PLACE_ID"
+
+          curl --fail-with-body --location \
+            --request POST \
+            "https://apis.roblox.com/universes/v1/${ROBLOX_UNIVERSE_ID}/places/${ROBLOX_PLACE_ID}/versions?versionType=Published" \
+            --header "x-api-key: ${ROBLOX_API_KEY}" \
+            --header "Content-Type: application/xml" \
+            --data-binary "@roblox_game.rbxlx"
