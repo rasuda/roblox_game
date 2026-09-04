@@ -33,7 +33,7 @@ spawn.Parent = world
 
 local colors = {
 	Color3.fromRGB(255, 89, 89),
-	Color3.fromRGB(70, 170, 255),
+	Color3.fromRGB(70, 200, 100),
 	Color3.fromRGB(170, 85, 255),
 }
 
