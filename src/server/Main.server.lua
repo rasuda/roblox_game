@@ -1,5 +1,6 @@
 local Lighting = game:GetService("Lighting")
 local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
 
 local modules = script.Parent:WaitForChild("CityModules")
 local Config = require(modules.CityConfig)
@@ -49,7 +50,40 @@ local function configureLighting()
 end
 
 configureLighting()
-local world = CityBuilder.build(Config)
+
+-- Garante chão e respawn mesmo se uma futura alteração no gerador falhar.
+local recoveryPlatform = Instance.new("Part")
+recoveryPlatform.Name = "CityRecoveryPlatform"
+recoveryPlatform.Anchored = true
+recoveryPlatform.Size = Vector3.new(220, 2, 220)
+recoveryPlatform.Position = Vector3.new(76, -1, -120)
+recoveryPlatform.Color = Color3.fromRGB(183, 63, 63)
+recoveryPlatform.Material = Enum.Material.Concrete
+recoveryPlatform:SetAttribute("PreserveAcrossCityRebuild", true)
+recoveryPlatform.Parent = Workspace
+
+local recoverySpawn = Instance.new("SpawnLocation")
+recoverySpawn.Name = "CityRecoverySpawn"
+recoverySpawn.Anchored = true
+recoverySpawn.Size = Vector3.new(12, 1, 12)
+recoverySpawn.Position = Vector3.new(76, 1, -120)
+recoverySpawn.Neutral = true
+recoverySpawn:SetAttribute("PreserveAcrossCityRebuild", true)
+recoverySpawn.Parent = Workspace
+
+local success, result = xpcall(function()
+	return CityBuilder.build(Config)
+end, debug.traceback)
+
+if not success then
+	recoveryPlatform.Color = Color3.fromRGB(225, 55, 55)
+	warn("[NeonDesertCity] Falha ao construir a cidade:\n" .. tostring(result))
+	return
+end
+
+local world = result
+recoverySpawn:Destroy()
+recoveryPlatform:Destroy()
 
 Players.PlayerAdded:Connect(function(player)
 	print(string.format("[NeonDesertCity] MVP carregado para %s", player.Name))

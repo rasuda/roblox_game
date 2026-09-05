@@ -1,4 +1,5 @@
 local CollectionService = game:GetService("CollectionService")
+local Players = game:GetService("Players")
 local Workspace = game:GetService("Workspace")
 
 local Builder = require(script.Parent.Builder)
@@ -232,7 +233,8 @@ end
 function CityBuilder.clearOldMap(config)
 	local terrain = Workspace:FindFirstChildOfClass("Terrain")
 	for _, child in ipairs(Workspace:GetChildren()) do
-		local keep = child == terrain or child == Workspace.CurrentCamera or child:GetAttribute("PreserveAcrossCityRebuild") == true
+		local isPlayerCharacter = child:IsA("Model") and Players:GetPlayerFromCharacter(child) ~= nil
+		local keep = child == terrain or child == Workspace.CurrentCamera or isPlayerCharacter or child:GetAttribute("PreserveAcrossCityRebuild") == true
 		if not keep then
 			child:Destroy()
 		end
@@ -244,8 +246,6 @@ end
 
 function CityBuilder.build(config)
 	CityBuilder.clearOldMap(config)
-
-	Workspace.FallenPartsDestroyHeight = -200
 
 	local world = Instance.new("Folder")
 	world.Name = config.WorldName
