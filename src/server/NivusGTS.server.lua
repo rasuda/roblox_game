@@ -51,14 +51,16 @@ end
 local chassis = makePart("Part", "Chassis", Vector3.new(6.8, 0.7, 12.8), CFrame.new(0, 0, 0), BLACK, Enum.Material.Metal, true)
 car.PrimaryPart = chassis
 
-bodyPart("LowerBody", Vector3.new(6.9, 1.55, 12.2), Vector3.new(0, 1.05, 0), BLACK)
-bodyPart("MainBody", Vector3.new(6.65, 1.8, 11.8), Vector3.new(0, 2.05, -0.15), WHITE)
-bodyPart("FrontHood", Vector3.new(6.45, 0.65, 3.8), Vector3.new(0, 3.05, -4.45), WHITE)
-bodyPart("RearDeck", Vector3.new(6.5, 0.8, 2.25), Vector3.new(0, 3.15, 4.7), WHITE)
+bodyPart("LowerBody", Vector3.new(6.9, 1.35, 11.8), Vector3.new(0, 1.0, 0), BLACK)
+bodyPart("MainBody", Vector3.new(6.55, 1.45, 10.8), Vector3.new(0, 2.05, -0.05), WHITE)
+makePart("WedgePart", "SlopedHood", Vector3.new(6.35, 0.82, 3.65), CFrame.new(0, 2.95, -4.32), WHITE, Enum.Material.SmoothPlastic, false)
+makePart("WedgePart", "RearShoulder", Vector3.new(6.35, 0.9, 2.45), CFrame.new(0, 2.98, 4.55) * CFrame.Angles(0, math.rad(180), 0), WHITE, Enum.Material.SmoothPlastic, false)
 
 -- Cabine cupê, com teto e colunas em preto.
-bodyPart("CabinCore", Vector3.new(5.85, 2.35, 6.2), Vector3.new(0, 3.75, 0.65), GLOSS_BLACK)
-local roof = bodyPart("BlackRoof", Vector3.new(5.5, 0.42, 5.25), Vector3.new(0, 5.05, 0.8), GLOSS_BLACK)
+bodyPart("CabinCenter", Vector3.new(5.7, 2.15, 3.25), Vector3.new(0, 3.75, 0.55), GLOSS_BLACK)
+makePart("WedgePart", "FrontCabinSlope", Vector3.new(5.7, 2.15, 2.35), CFrame.new(0, 3.75, -2.02), GLASS, Enum.Material.Glass, false).Transparency = 0.18
+makePart("WedgePart", "RearCabinSlope", Vector3.new(5.7, 2.05, 2.65), CFrame.new(0, 3.68, 2.78) * CFrame.Angles(0, math.rad(180), 0), GLASS, Enum.Material.Glass, false).Transparency = 0.18
+local roof = bodyPart("BlackRoof", Vector3.new(5.38, 0.34, 4.55), Vector3.new(0, 4.92, 0.62), GLOSS_BLACK)
 roof.Material = Enum.Material.Metal
 
 local windshield = makePart(
@@ -87,9 +89,9 @@ rearWindow.Reflectance = 0.08
 
 for _, side in ipairs({-1, 1}) do
 	local x = side * 2.98
-	local sideWindowFront = makePart("Part", "FrontSideWindow", Vector3.new(0.18, 1.65, 2.4), CFrame.new(x, 4.15, -0.65), GLASS, Enum.Material.Glass, false)
+	local sideWindowFront = makePart("WedgePart", "FrontSideWindow", Vector3.new(0.18, 1.65, 2.35), CFrame.new(x, 4.02, -0.72), GLASS, Enum.Material.Glass, false)
 	sideWindowFront.Transparency = 0.2
-	local sideWindowRear = makePart("Part", "RearSideWindow", Vector3.new(0.18, 1.55, 2.2), CFrame.new(x, 4.05, 1.85) * CFrame.Angles(math.rad(8), 0, 0), GLASS, Enum.Material.Glass, false)
+	local sideWindowRear = makePart("WedgePart", "RearSideWindow", Vector3.new(0.18, 1.52, 2.25), CFrame.new(x, 3.96, 1.62) * CFrame.Angles(0, math.rad(180), 0), GLASS, Enum.Material.Glass, false)
 	sideWindowRear.Transparency = 0.2
 
 	bodyPart("BPillar", Vector3.new(0.25, 2.05, 0.32), Vector3.new(x, 4.12, 0.65), GLOSS_BLACK)
@@ -193,7 +195,7 @@ driverSeat.Anchored = true
 driverSeat.CanCollide = false
 driverSeat.Transparency = 1
 driverSeat.Size = Vector3.new(2.1, 1, 2.2)
-driverSeat.CFrame = startCFrame * CFrame.new(-1.35, 3.65, 0)
+driverSeat.CFrame = startCFrame * CFrame.new(-1.35, 2.25, 0)
 driverSeat.MaxSpeed = 70
 driverSeat.TurnSpeed = 1.55
 driverSeat.Parent = car
@@ -256,10 +258,10 @@ end)
 -- Placa de identificação acima do carro estacionado.
 local marker = Instance.new("BillboardGui")
 marker.Name = "CarMarker"
-marker.Size = UDim2.fromOffset(240, 52)
-marker.StudsOffset = Vector3.new(0, 7.5, 0)
+marker.Size = UDim2.fromOffset(170, 34)
+marker.StudsOffset = Vector3.new(0, 6.5, 0)
 marker.AlwaysOnTop = true
-marker.MaxDistance = 80
+marker.MaxDistance = 45
 marker.Parent = chassis
 
 local markerText = Instance.new("TextLabel")
@@ -275,5 +277,9 @@ markerText.Parent = marker
 local markerCorner = Instance.new("UICorner")
 markerCorner.CornerRadius = UDim.new(0, 10)
 markerCorner.Parent = markerText
+
+driverSeat:GetPropertyChangedSignal("Occupant"):Connect(function()
+	marker.Enabled = driverSeat.Occupant == nil
+end)
 
 print("[roblox_game] VW Nivus GTS 2026 criado com sucesso.")
