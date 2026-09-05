@@ -6,6 +6,19 @@ local Complexes = require(script.Parent.Complexes)
 
 local CityBuilder = {}
 
+-- Roblox limita cada eixo de uma Part a 2048 studs. O mapa grande precisa ser
+-- dividido em blocos menores para não interromper a geração após limpar o cenário.
+local SAFE_PART_LENGTH = 1000
+
+local function addLongParts(parent, name, width, height, length, x, y, color, material)
+	local segmentCount = math.ceil(length / SAFE_PART_LENGTH)
+	local segmentLength = length / segmentCount
+	for index = 1, segmentCount do
+		local z = -length / 2 + segmentLength / 2 + (index - 1) * segmentLength
+		Builder.part(parent, name .. index, Vector3.new(width, height, segmentLength), CFrame.new(x, y, z), color, material, true)
+	end
+end
+
 local function addPalm(parent, position, scale, decorativeShadows)
 	local model = Builder.model(parent, "Palm")
 	local trunkHeight = 22 * scale
@@ -74,7 +87,15 @@ end
 local function buildTerrain(world, config)
 	local terrainFolder = Builder.model(world, "TerrainAndHorizon")
 	local size = config.World.Size
-	Builder.part(terrainFolder, "DesertGround", Vector3.new(size, 8, size), CFrame.new(0, -4, 0), config.Palette.Sand, Enum.Material.Sand, true)
+	local tileCount = math.ceil(size / SAFE_PART_LENGTH)
+	local tileSize = size / tileCount
+	for xIndex = 1, tileCount do
+		for zIndex = 1, tileCount do
+			local x = -size / 2 + tileSize / 2 + (xIndex - 1) * tileSize
+			local z = -size / 2 + tileSize / 2 + (zIndex - 1) * tileSize
+			Builder.part(terrainFolder, "DesertTile", Vector3.new(tileSize, 8, tileSize), CFrame.new(x, -4, z), config.Palette.Sand, Enum.Material.Sand, true)
+		end
+	end
 
 	local mountainDistance = config.World.MountainDistance
 	for index = 1, 16 do
@@ -93,12 +114,12 @@ local function buildRoadNetwork(world, config)
 	local roads = Builder.model(world, "RoadNetwork")
 	local strip = config.Strip
 	local halfLength = strip.Length / 2
-	Builder.part(roads, "MainStrip", Vector3.new(strip.RoadWidth, 1, strip.Length), CFrame.new(0, 0.15, 0), config.Palette.Asphalt, Enum.Material.Asphalt, true)
-	Builder.part(roads, "CenterMedian", Vector3.new(strip.MedianWidth, 1.3, strip.Length), CFrame.new(0, 0.85, 0), Color3.fromRGB(125, 119, 102), Enum.Material.Concrete, true)
+	addLongParts(roads, "MainStrip", strip.RoadWidth, 1, strip.Length, 0, 0.15, config.Palette.Asphalt, Enum.Material.Asphalt)
+	addLongParts(roads, "CenterMedian", strip.MedianWidth, 1.3, strip.Length, 0, 0.85, Color3.fromRGB(125, 119, 102), Enum.Material.Concrete)
 
 	local sidewalkX = strip.RoadWidth / 2 + strip.SidewalkWidth / 2
 	for _, side in ipairs({-1, 1}) do
-		Builder.part(roads, "StripSidewalk", Vector3.new(strip.SidewalkWidth, 1.2, strip.Length), CFrame.new(side * sidewalkX, 0.7, 0), config.Palette.Concrete, Enum.Material.Concrete, true)
+		addLongParts(roads, "StripSidewalk", strip.SidewalkWidth, 1.2, strip.Length, side * sidewalkX, 0.7, config.Palette.Concrete, Enum.Material.Concrete)
 	end
 
 	local drivingHalfWidth = (strip.RoadWidth - strip.MedianWidth) / 2

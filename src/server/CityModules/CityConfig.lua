@@ -34,7 +34,7 @@ local Config = {
 	Lighting = {
 		CycleEnabled = true,
 		FullDayMinutes = 14,
-		StartClockTime = 18.4,
+		StartClockTime = 14.5,
 		NightStarts = 18.2,
 		DayStarts = 6.2,
 	},
