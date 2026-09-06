@@ -19,6 +19,7 @@ resort.Parent = world
 local HOTEL_X = 120
 local HOTEL_Z = -38
 local WATER_Y = 1
+local LAKE_Z = 78
 -- Distancia visual minima entre faces decorativas para evitar z-fighting.
 local SURFACE_GAP = 0.12
 
@@ -148,99 +149,131 @@ signText.TextScaled = true
 signText.Font = Enum.Font.Garamond
 signText.Parent = signGui
 
--- Entrada acessivel: lobby oco, portas atravessaveis e recepcao ainda vazia.
+-- Grande entrada do hotel. O volume tem escala suficiente para acompanhar a
+-- fachada, mas continua leve para funcionar bem no celular.
 local lobby = Instance.new("Model")
 lobby.Name = "BellagioLobby"
 lobby.Parent = hotel
 
-part(lobby, "LobbyFloor", Vector3.new(45, 0.55, 21), Vector3.new(HOTEL_X, 0.34, -10), MARBLE, Enum.Material.Marble, true)
-part(lobby, "LeftLobbyWall", Vector3.new(1.2, 14, 21), Vector3.new(HOTEL_X - 21.9, 7.25, -10), CREAM_LIGHT, Enum.Material.Marble, true)
-part(lobby, "RightLobbyWall", Vector3.new(1.2, 14, 21), Vector3.new(HOTEL_X + 21.9, 7.25, -10), CREAM_LIGHT, Enum.Material.Marble, true)
-part(lobby, "ReceptionWall", Vector3.new(45, 14, 1.1), Vector3.new(HOTEL_X, 7.25, -20.15), CREAM, Enum.Material.Marble, true)
+part(lobby, "LobbyFloor", Vector3.new(74, 0.65, 34), Vector3.new(HOTEL_X, 0.39, -4), MARBLE, Enum.Material.Marble, true)
+part(lobby, "LeftLobbyWall", Vector3.new(1.4, 18, 34), Vector3.new(HOTEL_X - 36.3, 9.35, -4), CREAM_LIGHT, Enum.Material.Marble, true)
+part(lobby, "RightLobbyWall", Vector3.new(1.4, 18, 34), Vector3.new(HOTEL_X + 36.3, 9.35, -4), CREAM_LIGHT, Enum.Material.Marble, true)
+part(lobby, "ReceptionWall", Vector3.new(74, 18, 1.2), Vector3.new(HOTEL_X, 9.35, -20.4), CREAM, Enum.Material.Marble, true)
 
--- Fachada frontal dividida para deixar um vao central largo.
+-- Fachada envidracada: tres entradas centrais e vitrines laterais.
 for _, side in ipairs({-1, 1}) do
-	part(lobby, "EntranceSideWall", Vector3.new(10, 14, 1), Vector3.new(HOTEL_X + side * 17.3, 7.25, 0.15), CREAM_LIGHT, Enum.Material.Marble, true)
-	local sideGlass = part(lobby, "EntranceSideGlass", Vector3.new(6.5, 9, 0.3), Vector3.new(HOTEL_X + side * 11.9, 5.2, 0.72), WINDOW_BLUE, Enum.Material.Glass, false)
-	sideGlass.Transparency = 0.28
+	part(lobby, "EntrancePier", Vector3.new(7.5, 18, 1.4), Vector3.new(HOTEL_X + side * 32.25, 9.35, 12.45), CREAM_LIGHT, Enum.Material.Marble, true)
+	local sideGlass = part(lobby, "LobbyWindow", Vector3.new(15.5, 12, 0.34), Vector3.new(HOTEL_X + side * 20.6, 6.65, 13.18), WINDOW_BLUE, Enum.Material.Glass, false)
+	sideGlass.Transparency = 0.3
 end
-part(lobby, "EntranceLintel", Vector3.new(25, 4.2, 1), Vector3.new(HOTEL_X, 12.15, 0.15), CREAM_LIGHT, Enum.Material.Marble, true)
+part(lobby, "EntranceLintel", Vector3.new(57, 5, 1.4), Vector3.new(HOTEL_X, 15.85, 12.45), CREAM_LIGHT, Enum.Material.Marble, true)
 
--- Quatro folhas de vidro sem colisao permitem entrar caminhando.
-for _, xOffset in ipairs({-8.7, -2.9, 2.9, 8.7}) do
-	local door = part(lobby, "GlassEntranceDoor", Vector3.new(5.35, 8.2, 0.28), Vector3.new(HOTEL_X + xOffset, 4.65, 0.78), Color3.fromRGB(77, 119, 139), Enum.Material.Glass, false)
+for _, xOffset in ipairs({-10.2, -3.4, 3.4, 10.2}) do
+	local door = part(lobby, "GlassEntranceDoor", Vector3.new(6.35, 10.4, 0.3), Vector3.new(HOTEL_X + xOffset, 5.85, 13.2), Color3.fromRGB(79, 125, 145), Enum.Material.Glass, false)
 	door.Transparency = 0.38
-	part(lobby, "DoorHandle", Vector3.new(0.14, 2.1, 0.22), Vector3.new(HOTEL_X + xOffset + (xOffset < 0 and 1.7 or -1.7), 4.6, 0.98), Color3.fromRGB(197, 164, 91), Enum.Material.Metal, false)
+	part(lobby, "DoorHandle", Vector3.new(0.16, 2.5, 0.24), Vector3.new(HOTEL_X + xOffset + (xOffset < 0 and 2 or -2), 5.8, 13.42), Color3.fromRGB(197, 164, 91), Enum.Material.Metal, false)
 end
-for _, xOffset in ipairs({-11.6, -5.8, 0, 5.8, 11.6}) do
-	part(lobby, "DoorFrame", Vector3.new(0.28, 9, 0.5), Vector3.new(HOTEL_X + xOffset, 5.05, 0.62), Color3.fromRGB(75, 66, 52), Enum.Material.Metal, true)
-end
-
--- Piso central com faixas embutidas acima do marmore, sem faces coplanares.
-for _, xOffset in ipairs({-13, 0, 13}) do
-	part(lobby, "MarbleInlay", Vector3.new(0.65, 0.07, 18), Vector3.new(HOTEL_X + xOffset, 0.655, -9.6), Color3.fromRGB(165, 126, 68), Enum.Material.Marble, false)
+for _, xOffset in ipairs({-13.55, -6.8, 0, 6.8, 13.55}) do
+	part(lobby, "DoorFrame", Vector3.new(0.34, 11.2, 0.56), Vector3.new(HOTEL_X + xOffset, 6.25, 13.04), Color3.fromRGB(75, 66, 52), Enum.Material.Metal, true)
 end
 
-local lobbyRoof = part(lobby, "LobbyRoof", Vector3.new(46, 1.4, 22), Vector3.new(HOTEL_X, 14.45, -10), CREAM_LIGHT, Enum.Material.Marble, true)
+-- Faixas decorativas elevadas 0,12 stud sobre o piso evitam faces coplanares.
+for _, xOffset in ipairs({-23, 0, 23}) do
+	part(lobby, "MarbleInlay", Vector3.new(0.8, 0.08, 30), Vector3.new(HOTEL_X + xOffset, 0.755, -3.6), Color3.fromRGB(165, 126, 68), Enum.Material.Marble, false)
+end
+
+local lobbyRoof = part(lobby, "LobbyRoof", Vector3.new(76, 1.6, 35.5), Vector3.new(HOTEL_X, 18.75, -4), CREAM_LIGHT, Enum.Material.Marble, true)
 lobbyRoof.Reflectance = 0.04
-local entranceDome = part(lobby, "EntranceDome", Vector3.new(23, 11, 23), Vector3.new(HOTEL_X, 20, -10), ROOF_GREEN, Enum.Material.Metal, false)
+local domeDrum = part(lobby, "DomeDrum", Vector3.new(5, 31, 31), Vector3.new(HOTEL_X, 21.1, -4), CREAM_DARK, Enum.Material.Limestone, false)
+domeDrum.Shape = Enum.PartType.Cylinder
+domeDrum.CFrame *= CFrame.Angles(0, 0, math.rad(90))
+local entranceDome = part(lobby, "EntranceDome", Vector3.new(27, 11, 27), Vector3.new(HOTEL_X, 24, -4), ROOF_GREEN, Enum.Material.Metal, false)
 entranceDome.Shape = Enum.PartType.Ball
 
+-- Placa integrada a fachada, sem texto flutuante sobre a tela.
+local entranceSign = part(lobby, "EntranceSign", Vector3.new(23, 3.6, 0.5), Vector3.new(HOTEL_X, 14.1, 13.32), CREAM_DARK, Enum.Material.Marble, false)
+local entranceSignGui = Instance.new("SurfaceGui")
+entranceSignGui.Face = Enum.NormalId.Back
+entranceSignGui.AlwaysOnTop = false
+entranceSignGui.Parent = entranceSign
+local entranceSignText = Instance.new("TextLabel")
+entranceSignText.Size = UDim2.fromScale(1, 1)
+entranceSignText.BackgroundTransparency = 1
+entranceSignText.Text = "BELLAGIO"
+entranceSignText.TextColor3 = Color3.fromRGB(255, 237, 179)
+entranceSignText.TextStrokeColor3 = Color3.fromRGB(69, 51, 31)
+entranceSignText.TextStrokeTransparency = 0.35
+entranceSignText.TextScaled = true
+entranceSignText.Font = Enum.Font.Garamond
+entranceSignText.Parent = entranceSignGui
+
 -- Balcao de check-in; o restante do lobby permanece vazio nesta etapa.
-part(lobby, "ReceptionDesk", Vector3.new(27, 3.2, 2.5), Vector3.new(HOTEL_X, 2.15, -17.4), CREAM_DARK, Enum.Material.Wood, true)
-part(lobby, "ReceptionCountertop", Vector3.new(29, 0.35, 3.2), Vector3.new(HOTEL_X, 3.86, -17.4), MARBLE, Enum.Material.Marble, true)
-for _, xOffset in ipairs({-9, 0, 9}) do
-	local receptionGlass = part(lobby, "ReceptionArchGlass", Vector3.new(6.5, 6.5, 0.24), Vector3.new(HOTEL_X + xOffset, 8.1, -19.47), WINDOW_BLUE, Enum.Material.Glass, false)
+part(lobby, "ReceptionDesk", Vector3.new(45, 3.4, 3), Vector3.new(HOTEL_X, 2.25, -16.9), CREAM_DARK, Enum.Material.Wood, true)
+part(lobby, "ReceptionCountertop", Vector3.new(47, 0.38, 3.8), Vector3.new(HOTEL_X, 4.14, -16.9), MARBLE, Enum.Material.Marble, true)
+for _, xOffset in ipairs({-16, -8, 0, 8, 16}) do
+	local receptionGlass = part(lobby, "ReceptionArchGlass", Vector3.new(6.3, 8.2, 0.25), Vector3.new(HOTEL_X + xOffset, 9, -19.65), WINDOW_BLUE, Enum.Material.Glass, false)
 	receptionGlass.Transparency = 0.35
 end
 
-for _, xOffset in ipairs({-14, -7, 0, 7, 14}) do
-	for _, zOffset in ipairs({-5.5, -13.5}) do
-		local ceilingLight = part(lobby, "LobbyCeilingLight", Vector3.new(1.3, 0.16, 1.3), Vector3.new(HOTEL_X + xOffset, 13.64, zOffset), WINDOW_GOLD, Enum.Material.Neon, false)
+for _, xOffset in ipairs({-27, -18, -9, 0, 9, 18, 27}) do
+	for _, zOffset in ipairs({-11, 3, 9}) do
+		local ceilingLight = part(lobby, "LobbyCeilingLight", Vector3.new(1.35, 0.18, 1.35), Vector3.new(HOTEL_X + xOffset, 17.84, zOffset), WINDOW_GOLD, Enum.Material.Neon, false)
 		local pointLight = Instance.new("PointLight")
 		pointLight.Color = Color3.fromRGB(255, 220, 156)
-		pointLight.Brightness = 1.1
-		pointLight.Range = 14
+		pointLight.Brightness = 0.8
+		pointLight.Range = 12
 		pointLight.Parent = ceilingLight
 	end
 end
 
--- Porte-cochere de vidro e metal sobre a area de desembarque.
-local canopyGlass = part(lobby, "DropOffCanopyGlass", Vector3.new(52, 0.35, 12), Vector3.new(HOTEL_X, 11.05, 7), Color3.fromRGB(88, 135, 126), Enum.Material.Glass, false)
-canopyGlass.Transparency = 0.32
-for _, xOffset in ipairs({-26.2, 26.2}) do
-	part(lobby, "CanopySideBeam", Vector3.new(0.5, 0.8, 12.5), Vector3.new(HOTEL_X + xOffset, 11.05, 7), ROOF_DARK, Enum.Material.Metal, true)
+-- Porte-cochere monumental com cobertura segmentada, moldura e oito colunas.
+for _, xOffset in ipairs({-30, 0, 30}) do
+	local canopyGlass = part(lobby, "DropOffCanopyGlass", Vector3.new(29.5, 0.42, 18), Vector3.new(HOTEL_X + xOffset, 15.55, 22), Color3.fromRGB(88, 135, 126), Enum.Material.Glass, false)
+	canopyGlass.Transparency = 0.3
 end
-for _, zOffset in ipairs({1, 13}) do
-	part(lobby, "CanopyCrossBeam", Vector3.new(53, 0.8, 0.5), Vector3.new(HOTEL_X, 11.05, zOffset), ROOF_DARK, Enum.Material.Metal, true)
+for _, xOffset in ipairs({-45.4, -15, 15, 45.4}) do
+	part(lobby, "CanopyRib", Vector3.new(0.55, 0.95, 18.8), Vector3.new(HOTEL_X + xOffset, 15.58, 22), ROOF_DARK, Enum.Material.Metal, true)
 end
-for _, xOffset in ipairs({-24, 24}) do
-	for _, zOffset in ipairs({2.2, 11.8}) do
-		local support = part(lobby, "CanopyColumn", Vector3.new(10.5, 1.15, 1.15), Vector3.new(HOTEL_X + xOffset, 5.6, zOffset), CREAM_DARK, Enum.Material.Marble, true)
+for _, zOffset in ipairs({12.6, 31.4}) do
+	part(lobby, "CanopyCrossBeam", Vector3.new(91.4, 1, 0.65), Vector3.new(HOTEL_X, 15.58, zOffset), ROOF_DARK, Enum.Material.Metal, true)
+end
+for _, xOffset in ipairs({-42, -14, 14, 42}) do
+	for _, zOffset in ipairs({14.5, 29.5}) do
+		local support = part(lobby, "CanopyColumn", Vector3.new(14.4, 1.55, 1.55), Vector3.new(HOTEL_X + xOffset, 7.65, zOffset), CREAM_DARK, Enum.Material.Marble, true)
 		support.Shape = Enum.PartType.Cylinder
 		support.CFrame *= CFrame.Angles(0, 0, math.rad(90))
+		part(lobby, "ColumnBase", Vector3.new(2.5, 0.7, 2.5), Vector3.new(HOTEL_X + xOffset, 0.78, zOffset), CREAM_LIGHT, Enum.Material.Marble, true)
 	end
 end
 
--- Patio de chegada, com pistas separadas de entrada e saida pela lateral.
-local drivewayY = 0.19
-part(resort, "HotelMotorCourt", Vector3.new(84, 0.28, 23), Vector3.new(HOTEL_X, drivewayY, 12), Color3.fromRGB(118, 85, 61), Enum.Material.Cobblestone, true)
-part(resort, "ArrivalDrive", Vector3.new(48, 0.28, 9), Vector3.new(186, drivewayY, 7), Color3.fromRGB(104, 75, 56), Enum.Material.Cobblestone, true)
-part(resort, "DepartureDrive", Vector3.new(48, 0.28, 9), Vector3.new(186, drivewayY, 19), Color3.fromRGB(104, 75, 56), Enum.Material.Cobblestone, true)
-part(resort, "DriveMedian", Vector3.new(45, 0.65, 2.4), Vector3.new(185.5, 0.52, 13), TREE_GREEN, Enum.Material.Grass, true)
+-- Patio amplo: os carros entram pela faixa traseira, circulam pela ilha e saem
+-- pela faixa dianteira, sem cruzar o caminho principal de pedestres.
+local drivewayY = 0.21
+part(resort, "HotelMotorCourt", Vector3.new(112, 0.32, 32), Vector3.new(HOTEL_X, drivewayY, 29.5), Color3.fromRGB(118, 85, 61), Enum.Material.Cobblestone, true)
+part(resort, "ArrivalDrive", Vector3.new(48, 0.32, 10), Vector3.new(200, drivewayY, 20), Color3.fromRGB(104, 75, 56), Enum.Material.Cobblestone, true)
+part(resort, "DepartureDrive", Vector3.new(48, 0.32, 10), Vector3.new(200, drivewayY, 39), Color3.fromRGB(104, 75, 56), Enum.Material.Cobblestone, true)
+part(resort, "DriveMedian", Vector3.new(47, 0.72, 5.5), Vector3.new(199.5, 0.57, 29.5), TREE_GREEN, Enum.Material.Grass, true)
+
+local arrivalIsland = part(resort, "ArrivalGarden", Vector3.new(0.72, 22, 22), Vector3.new(HOTEL_X, 0.58, 35), TREE_GREEN, Enum.Material.Grass, true)
+arrivalIsland.Shape = Enum.PartType.Cylinder
+arrivalIsland.CFrame *= CFrame.Angles(0, 0, math.rad(90))
+local islandBorder = part(resort, "ArrivalGardenBorder", Vector3.new(0.5, 24, 24), Vector3.new(HOTEL_X, 0.32, 35), MARBLE, Enum.Material.Marble, true)
+islandBorder.Shape = Enum.PartType.Cylinder
+islandBorder.CFrame *= CFrame.Angles(0, 0, math.rad(90))
+arrivalIsland.CFrame = CFrame.new(HOTEL_X, 0.83, 35) * CFrame.Angles(0, 0, math.rad(90))
 
 -- Meio-fio e marcacoes ficam em alturas diferentes para evitar z-fighting.
-part(resort, "HotelCurbFront", Vector3.new(86, 0.55, 1), Vector3.new(HOTEL_X, 0.48, 24 + SURFACE_GAP), MARBLE, Enum.Material.Concrete, true)
-part(resort, "HotelCurbLeft", Vector3.new(1, 0.55, 24), Vector3.new(HOTEL_X - 42.5 - SURFACE_GAP, 0.48, 12), MARBLE, Enum.Material.Concrete, true)
-for _, zOffset in ipairs({4.1, 9.9, 16.1, 21.9}) do
-	part(resort, "LaneEdge", Vector3.new(45, 0.06, 0.16), Vector3.new(185.5, 0.37, zOffset), Color3.fromRGB(241, 229, 195), Enum.Material.SmoothPlastic, false)
+part(resort, "HotelCurbFront", Vector3.new(114, 0.58, 1.1), Vector3.new(HOTEL_X, 0.51, 46.05), MARBLE, Enum.Material.Concrete, true)
+part(resort, "HotelCurbLeft", Vector3.new(1.1, 0.58, 33), Vector3.new(HOTEL_X - 56.55, 0.51, 29.5), MARBLE, Enum.Material.Concrete, true)
+for _, zOffset in ipairs({15.15, 24.85, 34.15, 43.85}) do
+	part(resort, "LaneEdge", Vector3.new(47, 0.07, 0.18), Vector3.new(199.5, 0.42, zOffset), Color3.fromRGB(241, 229, 195), Enum.Material.SmoothPlastic, false)
 end
 
 -- Pequena guarita de valet, sem NPC por enquanto.
-part(resort, "ValetBooth", Vector3.new(5, 5, 4), Vector3.new(153.5, 2.7, 20), CREAM_LIGHT, Enum.Material.Marble, true)
-local valetWindow = part(resort, "ValetWindow", Vector3.new(3.4, 2.3, 0.24), Vector3.new(153.5, 3.15, 17.88), WINDOW_BLUE, Enum.Material.Glass, false)
+part(resort, "ValetBooth", Vector3.new(6, 5.5, 4.5), Vector3.new(161, 2.95, 39), CREAM_LIGHT, Enum.Material.Marble, true)
+local valetWindow = part(resort, "ValetWindow", Vector3.new(4.2, 2.5, 0.26), Vector3.new(161, 3.35, 36.61), WINDOW_BLUE, Enum.Material.Glass, false)
 valetWindow.Transparency = 0.3
-part(resort, "ValetRoof", Vector3.new(5.6, 0.5, 4.6), Vector3.new(153.5, 5.42, 20), ROOF_GREEN, Enum.Material.Metal, true)
+part(resort, "ValetRoof", Vector3.new(6.7, 0.55, 5.2), Vector3.new(161, 5.85, 39), ROOF_GREEN, Enum.Material.Metal, true)
 
 -- Palmeiras e jardins entre o hotel e o lago.
 local function addPalm(x, z, scale)
@@ -262,14 +295,14 @@ local function addPalm(x, z, scale)
 	end
 end
 
-for _, xOffset in ipairs({-57, -45, -32, 32, 45, 57}) do
-	addPalm(HOTEL_X + xOffset, HOTEL_Z + 28 + math.abs(xOffset) * 0.06, 0.85)
+for _, xOffset in ipairs({-68, -56, -44, 44, 56, 68}) do
+	addPalm(HOTEL_X + xOffset, 6 + (math.abs(xOffset) - 44) * 0.35, 0.9)
 end
 
 -- Lago frontal com agua real e rasa. O piso fica logo abaixo da superficie,
 -- permitindo atravessar a fonte sem transformar a area em uma piscina funda.
 -- O piso geral termina em Y=0; o fundo do lago fica ligeiramente acima dele.
-part(resort, "LakeFoundation", Vector3.new(139, 1.5, 78), Vector3.new(HOTEL_X, -0.75 + SURFACE_GAP, 63), MARBLE, Enum.Material.Concrete, true)
+part(resort, "LakeFoundation", Vector3.new(139, 1.5, 65), Vector3.new(HOTEL_X, -0.75 + SURFACE_GAP, LAKE_Z), MARBLE, Enum.Material.Concrete, true)
 
 local terrain = Workspace.Terrain
 terrain.WaterColor = WATER
@@ -278,13 +311,13 @@ terrain.WaterReflectance = 0.12
 terrain.WaterWaveSize = 0.08
 terrain.WaterWaveSpeed = 7
 
-local waterCFrame = CFrame.new(HOTEL_X, -1, 63)
-local waterSize = Vector3.new(132, 4, 72)
+local waterCFrame = CFrame.new(HOTEL_X, -1, LAKE_Z)
+local waterSize = Vector3.new(132, 4, 60)
 terrain:FillBlock(waterCFrame, waterSize, Enum.Material.Air)
 terrain:FillBlock(waterCFrame, waterSize, Enum.Material.Water)
-part(resort, "LakesidePromenade", Vector3.new(146, 1.2, 13), Vector3.new(HOTEL_X, 0.65, 108), PATH, Enum.Material.Cobblestone, true)
-part(resort, "LeftLakeWalk", Vector3.new(8, 1.2, 86), Vector3.new(HOTEL_X - 72, 0.65, 65), PATH, Enum.Material.Cobblestone, true)
-part(resort, "RightLakeWalk", Vector3.new(8, 1.2, 86), Vector3.new(HOTEL_X + 72, 0.65, 65), PATH, Enum.Material.Cobblestone, true)
+part(resort, "LakesidePromenade", Vector3.new(146, 1.2, 13), Vector3.new(HOTEL_X, 0.65, 114.5), PATH, Enum.Material.Cobblestone, true)
+part(resort, "LeftLakeWalk", Vector3.new(8, 1.2, 69), Vector3.new(HOTEL_X - 72, 0.65, LAKE_Z), PATH, Enum.Material.Cobblestone, true)
+part(resort, "RightLakeWalk", Vector3.new(8, 1.2, 69), Vector3.new(HOTEL_X + 72, 0.65, LAKE_Z), PATH, Enum.Material.Cobblestone, true)
 
 -- Fontes animadas: linhas e arcos com quatro momentos coreografados.
 local fountains = Instance.new("Model")
@@ -328,17 +361,17 @@ end
 for index = 0, 16 do
 	local normalized = index / 16
 	local angle = math.rad(200 - normalized * 220)
-	local position = Vector3.new(HOTEL_X + math.cos(angle) * 50, WATER_Y, 59 + math.sin(angle) * 24)
+	local position = Vector3.new(HOTEL_X + math.cos(angle) * 50, WATER_Y, 75 + math.sin(angle) * 20)
 	addJet(position, index * 0.42, 1, 23 + (index % 3) * 5, 0.75)
 end
 
 -- Fileira frontal e eixo central para o grande final.
 for index = -6, 6 do
-	addJet(Vector3.new(HOTEL_X + index * 8.2, WATER_Y, 81), index * 0.55, 2, 30 + (6 - math.abs(index)) * 2.5, 0.9)
+	addJet(Vector3.new(HOTEL_X + index * 8.2, WATER_Y, 96), index * 0.55, 2, 30 + (6 - math.abs(index)) * 2.5, 0.9)
 end
 
 for index = -2, 2 do
-	addJet(Vector3.new(HOTEL_X + index * 11, WATER_Y, 57), index * 0.7, 3, 48 - math.abs(index) * 5, 1.15)
+	addJet(Vector3.new(HOTEL_X + index * 11, WATER_Y, 73), index * 0.7, 3, 48 - math.abs(index) * 5, 1.15)
 end
 
 local elapsed = 0
