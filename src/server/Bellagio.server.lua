@@ -19,6 +19,8 @@ resort.Parent = world
 local HOTEL_X = 120
 local HOTEL_Z = -38
 local WATER_Y = 1
+-- Distancia visual minima entre faces decorativas para evitar z-fighting.
+local SURFACE_GAP = 0.12
 
 local CREAM = Color3.fromRGB(220, 204, 169)
 local CREAM_LIGHT = Color3.fromRGB(239, 225, 192)
@@ -69,7 +71,7 @@ for segment = -3, 3 do
 	local x = HOTEL_X + segment * 19
 	local z = HOTEL_Z + absSegment * 3.3
 	local angle = math.rad(-segment * 3.5)
-	local panelCFrame = CFrame.new(x, 14 + height / 2, z) * CFrame.Angles(0, angle, 0)
+	local panelCFrame = CFrame.new(x, 14 - SURFACE_GAP + height / 2, z) * CFrame.Angles(0, angle, 0)
 
 	makePart(hotel, "Part", "HotelTower", Vector3.new(width, height, 18), panelCFrame, CREAM, Enum.Material.Limestone, true)
 	makePart(
@@ -95,7 +97,7 @@ for segment = -3, 3 do
 				"Part",
 				lit and "LitSuiteWindow" or "SuiteWindow",
 				Vector3.new(2.6, 3.7, 0.3),
-				panelCFrame * CFrame.new(localX, localY, 9.12),
+				panelCFrame * CFrame.new(localX, localY, 9 + 0.15 + SURFACE_GAP),
 				lit and WINDOW_GOLD or WINDOW_BLUE,
 				lit and Enum.Material.Neon or Enum.Material.Glass,
 				false
@@ -120,8 +122,8 @@ for segment = -3, 3 do
 end
 
 -- Torre central elevada, cupula e placa do hotel.
-part(hotel, "CentralCrown", Vector3.new(31, 15, 21), Vector3.new(HOTEL_X, 122.5, HOTEL_Z), CREAM_LIGHT, Enum.Material.Limestone, true)
-local crownRoof = makePart(hotel, "WedgePart", "CentralCopperRoof", Vector3.new(33, 10, 23), CFrame.new(HOTEL_X, 135, HOTEL_Z), ROOF_GREEN, Enum.Material.Metal, false)
+part(hotel, "CentralCrown", Vector3.new(31, 15, 21), Vector3.new(HOTEL_X, 122.25, HOTEL_Z), CREAM_LIGHT, Enum.Material.Limestone, true)
+local crownRoof = makePart(hotel, "WedgePart", "CentralCopperRoof", Vector3.new(33, 10, 23), CFrame.new(HOTEL_X, 134.62, HOTEL_Z), ROOF_GREEN, Enum.Material.Metal, false)
 crownRoof.Reflectance = 0.05
 
 local cupola = part(hotel, "Cupola", Vector3.new(13, 12, 13), Vector3.new(HOTEL_X, 145, HOTEL_Z), ROOF_DARK, Enum.Material.Metal, false)
@@ -149,24 +151,28 @@ signText.Parent = signGui
 -- Entrada central com portico, colunas e cupula frontal.
 part(hotel, "EntranceHall", Vector3.new(45, 15, 17), Vector3.new(HOTEL_X, 7.5, HOTEL_Z + 21), CREAM_LIGHT, Enum.Material.Marble, true)
 for _, offset in ipairs({-17, -11.3, -5.7, 5.7, 11.3, 17}) do
-	local column = part(hotel, "EntranceColumn", Vector3.new(1.5, 12, 1.5), Vector3.new(HOTEL_X + offset, 7, HOTEL_Z + 30), CREAM_DARK, Enum.Material.Marble, true)
+	local column = part(hotel, "EntranceColumn", Vector3.new(12, 1.5, 1.5), Vector3.new(HOTEL_X + offset, 7, HOTEL_Z + 30), CREAM_DARK, Enum.Material.Marble, true)
 	column.Shape = Enum.PartType.Cylinder
+	column.CFrame *= CFrame.Angles(0, 0, math.rad(90))
 end
-part(hotel, "EntranceCanopy", Vector3.new(45, 2, 12), Vector3.new(HOTEL_X, 14, HOTEL_Z + 31), ROOF_GREEN, Enum.Material.Metal, true)
+-- O topo do hall termina em Y=15. A cobertura sobe alem desse plano para que
+-- as duas faces superiores nunca sejam coplanares e nao pisquem no iPhone.
+part(hotel, "EntranceCanopy", Vector3.new(45, 2, 12), Vector3.new(HOTEL_X, 14 + SURFACE_GAP, HOTEL_Z + 31), ROOF_GREEN, Enum.Material.Metal, true)
 local entranceDome = part(hotel, "EntranceDome", Vector3.new(23, 11, 23), Vector3.new(HOTEL_X, 20, HOTEL_Z + 22), ROOF_GREEN, Enum.Material.Metal, false)
 entranceDome.Shape = Enum.PartType.Ball
 
 -- Palmeiras e jardins entre o hotel e o lago.
 local function addPalm(x, z, scale)
-	local trunk = part(hotel, "PalmTrunk", Vector3.new(1.2 * scale, 11 * scale, 1.2 * scale), Vector3.new(x, 5.5 * scale, z), Color3.fromRGB(112, 78, 46), Enum.Material.Wood, false)
+	local trunk = part(hotel, "PalmTrunk", Vector3.new(11 * scale, 1.2 * scale, 1.2 * scale), Vector3.new(x, 5.5 * scale, z), Color3.fromRGB(112, 78, 46), Enum.Material.Wood, false)
 	trunk.Shape = Enum.PartType.Cylinder
+	trunk.CFrame *= CFrame.Angles(0, 0, math.rad(90))
 	for leaf = 0, 5 do
 		local angle = math.rad(leaf * 60)
 		local leafPart = part(
 			hotel,
 			"PalmLeaf",
 			Vector3.new(0.7 * scale, 0.35 * scale, 7 * scale),
-			Vector3.new(x + math.sin(angle) * 2.4 * scale, 11.4 * scale, z + math.cos(angle) * 2.4 * scale),
+			Vector3.new(x + math.sin(angle) * 2.4 * scale, 11.4 * scale + leaf * SURFACE_GAP, z + math.cos(angle) * 2.4 * scale),
 			TREE_GREEN,
 			Enum.Material.Grass,
 			false
@@ -181,7 +187,8 @@ end
 
 -- Lago frontal com agua real e rasa. O piso fica logo abaixo da superficie,
 -- permitindo atravessar a fonte sem transformar a area em uma piscina funda.
-part(resort, "LakeFoundation", Vector3.new(139, 1.5, 78), Vector3.new(HOTEL_X, -0.75, 63), MARBLE, Enum.Material.Concrete, true)
+-- O piso geral termina em Y=0; o fundo do lago fica ligeiramente acima dele.
+part(resort, "LakeFoundation", Vector3.new(139, 1.5, 78), Vector3.new(HOTEL_X, -0.75 + SURFACE_GAP, 63), MARBLE, Enum.Material.Concrete, true)
 
 local terrain = Workspace.Terrain
 terrain.WaterColor = WATER
@@ -206,8 +213,9 @@ fountains.Parent = resort
 local jets = {}
 
 local function addJet(position, phase, group, maxHeight, width)
-	local nozzle = part(fountains, "FountainNozzle", Vector3.new(1.15, 0.28, 1.15), Vector3.new(position.X, WATER_Y + 0.28, position.Z), Color3.fromRGB(54, 68, 74), Enum.Material.Metal, false)
+	local nozzle = part(fountains, "FountainNozzle", Vector3.new(0.28, 1.15, 1.15), Vector3.new(position.X, WATER_Y + 0.28, position.Z), Color3.fromRGB(54, 68, 74), Enum.Material.Metal, false)
 	nozzle.Shape = Enum.PartType.Cylinder
+	nozzle.CFrame *= CFrame.Angles(0, 0, math.rad(90))
 
 	local stream = part(fountains, "WaterJet", Vector3.new(1, width, width), position + Vector3.new(0, 0.5, 0), WATER_JET, Enum.Material.Neon, false)
 	stream.Shape = Enum.PartType.Cylinder
