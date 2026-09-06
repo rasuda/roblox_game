@@ -9,6 +9,9 @@
       },
       "NivusGTS": {
         "$path": "src/server/NivusGTS.server.lua"
+      },
+      "Bellagio": {
+        "$path": "src/server/Bellagio.server.lua"
       }
     },
     "StarterPlayer": {
