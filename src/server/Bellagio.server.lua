@@ -157,7 +157,15 @@ for _, offset in ipairs({-17, -11.3, -5.7, 5.7, 11.3, 17}) do
 end
 -- O topo do hall termina em Y=15. A cobertura sobe alem desse plano para que
 -- as duas faces superiores nunca sejam coplanares e nao pisquem no iPhone.
-part(hotel, "EntranceCanopy", Vector3.new(45, 2, 12), Vector3.new(HOTEL_X, 14 + SURFACE_GAP, HOTEL_Z + 31), ROOF_GREEN, Enum.Material.Metal, true)
+part(
+	hotel,
+	"EntranceCanopy",
+	Vector3.new(45 + SURFACE_GAP * 4, 2, 12 + SURFACE_GAP * 2),
+	Vector3.new(HOTEL_X, 14 + SURFACE_GAP, HOTEL_Z + 31 + SURFACE_GAP),
+	ROOF_GREEN,
+	Enum.Material.Metal,
+	true
+)
 local entranceDome = part(hotel, "EntranceDome", Vector3.new(23, 11, 23), Vector3.new(HOTEL_X, 20, HOTEL_Z + 22), ROOF_GREEN, Enum.Material.Metal, false)
 entranceDome.Shape = Enum.PartType.Ball
 
