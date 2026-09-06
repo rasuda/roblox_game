@@ -18,7 +18,7 @@ resort.Parent = world
 
 local HOTEL_X = 120
 local HOTEL_Z = -38
-local WATER_Y = 0.72
+local WATER_Y = 1
 
 local CREAM = Color3.fromRGB(220, 204, 169)
 local CREAM_LIGHT = Color3.fromRGB(239, 225, 192)
@@ -179,11 +179,21 @@ for _, xOffset in ipairs({-57, -45, -32, 32, 45, 57}) do
 	addPalm(HOTEL_X + xOffset, HOTEL_Z + 28 + math.abs(xOffset) * 0.06, 0.85)
 end
 
--- Lago frontal e calcada de observacao.
-part(resort, "LakeFoundation", Vector3.new(139, 1.4, 78), Vector3.new(HOTEL_X, 0, 63), MARBLE, Enum.Material.Concrete, true)
-local lake = part(resort, "BellagioLake", Vector3.new(133, 0.55, 72), Vector3.new(HOTEL_X, WATER_Y, 63), WATER, Enum.Material.Glass, false)
-lake.Transparency = 0.18
-lake.Reflectance = 0.12
+-- Lago frontal com agua real e rasa. O piso fica logo abaixo da superficie,
+-- permitindo atravessar a fonte sem transformar a area em uma piscina funda.
+part(resort, "LakeFoundation", Vector3.new(139, 1.5, 78), Vector3.new(HOTEL_X, -0.75, 63), MARBLE, Enum.Material.Concrete, true)
+
+local terrain = Workspace.Terrain
+terrain.WaterColor = WATER
+terrain.WaterTransparency = 0.22
+terrain.WaterReflectance = 0.12
+terrain.WaterWaveSize = 0.08
+terrain.WaterWaveSpeed = 7
+
+local waterCFrame = CFrame.new(HOTEL_X, -1, 63)
+local waterSize = Vector3.new(132, 4, 72)
+terrain:FillBlock(waterCFrame, waterSize, Enum.Material.Air)
+terrain:FillBlock(waterCFrame, waterSize, Enum.Material.Water)
 part(resort, "LakesidePromenade", Vector3.new(146, 1.2, 13), Vector3.new(HOTEL_X, 0.65, 108), PATH, Enum.Material.Cobblestone, true)
 part(resort, "LeftLakeWalk", Vector3.new(8, 1.2, 86), Vector3.new(HOTEL_X - 72, 0.65, 65), PATH, Enum.Material.Cobblestone, true)
 part(resort, "RightLakeWalk", Vector3.new(8, 1.2, 86), Vector3.new(HOTEL_X + 72, 0.65, 65), PATH, Enum.Material.Cobblestone, true)
@@ -287,31 +297,5 @@ RunService.Heartbeat:Connect(function(deltaTime)
 		end
 	end
 end)
-
--- Marcador discreto para localizar o novo ponto de interesse.
-local markerAnchor = part(resort, "BellagioMarkerAnchor", Vector3.new(1, 1, 1), Vector3.new(HOTEL_X, 36, HOTEL_Z + 34), CREAM_LIGHT, Enum.Material.SmoothPlastic, false)
-markerAnchor.Transparency = 1
-
-local marker = Instance.new("BillboardGui")
-marker.Name = "BellagioMarker"
-marker.Size = UDim2.fromOffset(210, 48)
-marker.StudsOffset = Vector3.new(0, 4, 0)
-marker.AlwaysOnTop = true
-marker.MaxDistance = 180
-marker.Parent = markerAnchor
-
-local markerText = Instance.new("TextLabel")
-markerText.Size = UDim2.fromScale(1, 1)
-markerText.BackgroundColor3 = Color3.fromRGB(42, 38, 31)
-markerText.BackgroundTransparency = 0.2
-markerText.Text = "BELLAGIO  •  FONTES DANÇANTES"
-markerText.TextColor3 = Color3.fromRGB(255, 239, 192)
-markerText.TextScaled = true
-markerText.Font = Enum.Font.GothamBold
-markerText.Parent = marker
-
-local markerCorner = Instance.new("UICorner")
-markerCorner.CornerRadius = UDim.new(0, 10)
-markerCorner.Parent = markerText
 
 print("[roblox_game] Bellagio e espetaculo das fontes carregados com sucesso.")
