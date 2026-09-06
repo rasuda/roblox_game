@@ -2,8 +2,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
-local Config = require(script.Parent.CityModules.CityConfig)
-local world = Workspace:WaitForChild(Config.WorldName, 30)
+local world = Workspace:WaitForChild("EmpireStateWorld", 20)
 if not world then
 	warn("[roblox_game] Não foi possível criar o Nivus GTS: mundo não encontrado.")
 	return
@@ -26,7 +25,7 @@ local RED = Color3.fromRGB(220, 32, 42)
 local DARK_RED = Color3.fromRGB(133, 10, 19)
 local SILVER = Color3.fromRGB(175, 181, 184)
 
-local startCFrame = CFrame.new(25, 2, -160)
+local startCFrame = CFrame.new(-28, 2, 154)
 
 local function makePart(className, name, size, relativeCFrame, color, material, canCollide)
 	local object = Instance.new(className)
@@ -242,11 +241,16 @@ RunService.Heartbeat:Connect(function(deltaTime)
 	local speed = throttle >= 0 and 70 or 34
 	local proposed = carPosition + direction * throttle * speed * deltaTime
 	proposed = Vector3.new(
-		math.clamp(proposed.X, -450, 450),
+		math.clamp(proposed.X, -195, 195),
 		carPosition.Y,
-		math.clamp(proposed.Z, -1580, 1580)
+		math.clamp(proposed.Z, -195, 195)
 	)
-	carPosition = proposed
+
+	-- Impede que o carro atravesse o volume principal do edifício.
+	local insideBuilding = math.abs(proposed.X) < 49 and math.abs(proposed.Z) < 42
+	if not insideBuilding then
+		carPosition = proposed
+	end
 
 	car:PivotTo(CFrame.new(carPosition) * CFrame.Angles(0, carHeading, 0))
 end)

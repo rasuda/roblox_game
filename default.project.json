@@ -3,26 +3,21 @@
   "tree": {
     "$className": "DataModel",
     "ServerScriptService": {
-      "$path": "src/server"
+      "$className": "ServerScriptService",
+      "Main": {
+        "$path": "src/server/Main.server.lua"
+      },
+      "NivusGTS": {
+        "$path": "src/server/NivusGTS.server.lua"
+      }
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
       "StarterPlayerScripts": {
-        "$path": "src/client"
-      }
-    },
-    "Workspace": {
-      "$properties": {
-        "StreamingEnabled": true,
-        "StreamingMinRadius": 128,
-        "StreamingTargetRadius": 420
-      }
-    },
-    "Lighting": {
-      "$properties": {
-        "Technology": "Future",
-        "GlobalShadows": true,
-        "ShadowSoftness": 0.35
+        "$className": "StarterPlayerScripts",
+        "MagicCarpetController": {
+          "$path": "src/client/MagicCarpetController.client.lua"
+        }
       }
     }
   }
