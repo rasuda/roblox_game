@@ -3,8 +3,9 @@
 -- the sole controller, suspension and collision system.
 local InsertService = game:GetService("InsertService")
 local ASSET_ID = 4026700014
-local TARGET_LENGTH = 13.9
+local TARGET_LENGTH = 14.2
 local BODY_BOTTOM = -0.88
+local BODY_BACK_OFFSET = 0.25
 
 return function(car)
 	local ok, package = pcall(InsertService.LoadAsset, InsertService, ASSET_ID)
@@ -76,7 +77,7 @@ return function(car)
 	local boxToPivot = boxCF:ToObjectSpace(visual:GetPivot())
 	local rotation = CFrame.Angles(0, longOnX and math.rad(90) or 0, 0)
 	local desiredBox = car.DriveSeat.CFrame
-		* CFrame.new(0, BODY_BOTTOM + boxSize.Y / 2, 0)
+		* CFrame.new(0, BODY_BOTTOM + boxSize.Y / 2, BODY_BACK_OFFSET)
 		* rotation
 	visual:PivotTo(desiredBox * boxToPivot)
 	visual.Parent = car.Body
