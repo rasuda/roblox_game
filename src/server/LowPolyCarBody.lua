@@ -49,23 +49,23 @@ return function(car)
 		return false
 	end
 
-	-- Fit each axis independently. Uniform scaling made this asset too short
-	-- because its original height became the limiting dimension.
+	-- One scale for every part and offset preserves rotated mesh panels.
+	-- Per-axis Size scaling distorts panels whose local axes differ from the body.
 	local longOnX = sourceSize.X > sourceSize.Z
-	local scaleX = (longOnX and 13.6 or 6.25) / sourceSize.X
-	local scaleY = 3.55 / sourceSize.Y
-	local scaleZ = (longOnX and 6.25 or 13.6) / sourceSize.Z
+	local scale = 13.6 / math.max(sourceSize.X, sourceSize.Z)
 	for _, part in visual:GetChildren() do
 		if part:IsA("BasePart") then
 			local relative = sourceBox:ToObjectSpace(part.CFrame)
 			local position = relative.Position
-			part.Size = Vector3.new(
-				part.Size.X * scaleX,
-				part.Size.Y * scaleY,
-				part.Size.Z * scaleZ
-			)
+			part.Size = part.Size * scale
+			for _, mesh in part:GetChildren() do
+				if mesh:IsA("SpecialMesh") then
+					mesh.Scale = mesh.Scale * scale
+					mesh.Offset = mesh.Offset * scale
+				end
+			end
 			part.CFrame = sourceBox
-				* CFrame.new(position.X * scaleX, position.Y * scaleY, position.Z * scaleZ)
+				* CFrame.new(position * scale)
 				* relative.Rotation
 		end
 	end
@@ -86,6 +86,41 @@ return function(car)
 		if wheel:IsA("BasePart") then
 			wheel.Color = Color3.fromRGB(22, 22, 24)
 			wheel.Transparency = 0
+			-- Welded by native A-Chassis initialization to this wheel, not Body.
+			local parts = wheel:FindFirstChild("Parts")
+			if not parts then
+				parts = Instance.new("Model")
+				parts.Name = "Parts"
+				parts.Parent = wheel
+			end
+			local function detail(name, size, cf, color, cylinder)
+				local p = Instance.new("Part")
+				p.Name = name
+				p.Size = size
+				p.CFrame = cf
+				p.Color = color
+				p.Material = Enum.Material.SmoothPlastic
+				p.Anchored = true
+				p.Massless = true
+				p.CanCollide = false
+				p.CanTouch = false
+				p.CanQuery = false
+				if cylinder then p.Shape = Enum.PartType.Cylinder end
+				p.Parent = parts
+			end
+			local radius = math.min(wheel.Size.Y, wheel.Size.Z) * 0.35
+			for _, side in ipairs({-1, 1}) do
+				local hub = wheel.CFrame * CFrame.new(side * (wheel.Size.X / 2 + 0.045), 0, 0)
+				detail("RimBarrel", Vector3.new(0.07, radius*2, radius*2), hub,
+					Color3.fromRGB(65,70,77), true)
+				local face = hub * CFrame.new(side * 0.075,0,0)
+				for i=0,7 do
+					detail("SilverSpoke", Vector3.new(0.08,radius*0.8,0.12),
+						face * CFrame.Angles(i*math.pi/4,0,0) * CFrame.new(0,radius*0.5,0),
+						Color3.fromRGB(202,207,215), false)
+				end
+				detail("HubCap",Vector3.new(0.12,0.3,0.3),face,Color3.fromRGB(180,185,193),true)
+			end
 		end
 		for _, object in wheel:GetDescendants() do
 			if object:IsA("SpringConstraint") then
