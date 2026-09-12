@@ -13,6 +13,25 @@ car.Name = "LowPolyAChassis"
 local seat = car:FindFirstChild("DriveSeat")
 assert(seat and seat:IsA("VehicleSeat"), "A-Chassis DriveSeat missing")
 
+-- Keep the lower corners free for native touch steering/throttle controls.
+-- Tires and G-forces are diagnostic panels; the main gauges remain visible.
+local tune = car:FindFirstChild("A-Chassis Tune")
+local plugins = tune and tune:FindFirstChild("Plugins")
+if plugins then
+	local tires = plugins:FindFirstChild("Tires")
+	local gForces = plugins:FindFirstChild("GForces")
+	if tires and tires:IsA("GuiObject") then tires.Visible = false end
+	if gForces and gForces:IsA("GuiObject") then gForces.Visible = false end
+
+	local gauges = plugins:FindFirstChild("Gauges")
+	local advanced = gauges and gauges:FindFirstChild("Advanced")
+	if advanced and advanced:IsA("GuiObject") then
+		advanced.AnchorPoint = Vector2.new(0.5, 0.5)
+		advanced.Position = UDim2.new(0.82, 0, 0.20, 0)
+		advanced.Size = UDim2.new(0.30, 0, 0.19, 0)
+	end
+end
+
 -- Position before parenting so Initialize runs only at the final spawn point.
 car.PrimaryPart = seat
 car:PivotTo(CFrame.new(-58, 6, 154))

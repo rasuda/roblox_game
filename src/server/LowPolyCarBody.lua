@@ -3,6 +3,8 @@
 -- the sole controller, suspension and collision system.
 local InsertService = game:GetService("InsertService")
 local ASSET_ID = 4026700014
+local TARGET_LENGTH = 13.9
+local BODY_BOTTOM = -0.88
 
 return function(car)
 	local ok, package = pcall(InsertService.LoadAsset, InsertService, ASSET_ID)
@@ -52,7 +54,7 @@ return function(car)
 	-- One scale for every part and offset preserves rotated mesh panels.
 	-- Per-axis Size scaling distorts panels whose local axes differ from the body.
 	local longOnX = sourceSize.X > sourceSize.Z
-	local scale = 13.6 / math.max(sourceSize.X, sourceSize.Z)
+	local scale = TARGET_LENGTH / math.max(sourceSize.X, sourceSize.Z)
 	for _, part in visual:GetChildren() do
 		if part:IsA("BasePart") then
 			local relative = sourceBox:ToObjectSpace(part.CFrame)
@@ -74,7 +76,7 @@ return function(car)
 	local boxToPivot = boxCF:ToObjectSpace(visual:GetPivot())
 	local rotation = CFrame.Angles(0, longOnX and math.rad(90) or 0, 0)
 	local desiredBox = car.DriveSeat.CFrame
-		* CFrame.new(0, -0.72 + boxSize.Y / 2, 0)
+		* CFrame.new(0, BODY_BOTTOM + boxSize.Y / 2, 0)
 		* rotation
 	visual:PivotTo(desiredBox * boxToPivot)
 	visual.Parent = car.Body
