@@ -3,7 +3,7 @@
 -- the sole controller, suspension and collision system.
 local InsertService = game:GetService("InsertService")
 local ASSET_ID = 4026700014
-local TARGET_LENGTH = 14.2
+local TARGET_LENGTH = 14.9
 local BODY_BOTTOM = -0.88
 local BODY_BACK_OFFSET = 0.25
 
