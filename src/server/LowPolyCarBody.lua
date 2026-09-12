@@ -4,6 +4,7 @@
 local InsertService = game:GetService("InsertService")
 local ASSET_ID = 4026700014
 local TARGET_LENGTH = 14.9
+local LENGTH_STRETCH = 1.10
 local BODY_BOTTOM = -0.88
 local BODY_BACK_OFFSET = 0.25
 
@@ -52,15 +53,42 @@ return function(car)
 		return false
 	end
 
-	-- One scale for every part and offset preserves rotated mesh panels.
-	-- Per-axis Size scaling distorts panels whose local axes differ from the body.
+	-- First fit the whole body uniformly, preserving its current width and height.
+	-- Then stretch only its longitudinal axis. Each panel's most closely aligned
+	-- local axis is selected so rotated MeshParts are not stretched sideways.
 	local longOnX = sourceSize.X > sourceSize.Z
 	local scale = TARGET_LENGTH / math.max(sourceSize.X, sourceSize.Z)
 	for _, part in visual:GetChildren() do
 		if part:IsA("BasePart") then
 			local relative = sourceBox:ToObjectSpace(part.CFrame)
 			local position = relative.Position
-			part.Size = part.Size * scale
+			if longOnX then
+				position = Vector3.new(position.X * LENGTH_STRETCH, position.Y, position.Z)
+			else
+				position = Vector3.new(position.X, position.Y, position.Z * LENGTH_STRETCH)
+			end
+
+			local longitudinalAxis = longOnX and Vector3.xAxis or Vector3.zAxis
+			local right = sourceBox:VectorToObjectSpace(part.CFrame.RightVector)
+			local up = sourceBox:VectorToObjectSpace(part.CFrame.UpVector)
+			local back = sourceBox:VectorToObjectSpace(part.CFrame.LookVector)
+			local alignment = {
+				math.abs(right:Dot(longitudinalAxis)),
+				math.abs(up:Dot(longitudinalAxis)),
+				math.abs(back:Dot(longitudinalAxis)),
+			}
+			local stretchAxis = alignment[1] >= alignment[2]
+				and (alignment[1] >= alignment[3] and 1 or 3)
+				or (alignment[2] >= alignment[3] and 2 or 3)
+			local size = part.Size * scale
+			if stretchAxis == 1 then
+				size = Vector3.new(size.X * LENGTH_STRETCH, size.Y, size.Z)
+			elseif stretchAxis == 2 then
+				size = Vector3.new(size.X, size.Y * LENGTH_STRETCH, size.Z)
+			else
+				size = Vector3.new(size.X, size.Y, size.Z * LENGTH_STRETCH)
+			end
+			part.Size = size
 			for _, mesh in part:GetChildren() do
 				if mesh:IsA("SpecialMesh") then
 					mesh.Scale = mesh.Scale * scale
