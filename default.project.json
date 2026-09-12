@@ -16,6 +16,9 @@
       "PoloRallyBody": {
         "$path": "src/server/PoloRallyBody.lua"
       },
+      "LowPolyCarBody": {
+        "$path": "src/server/LowPolyCarBody.lua"
+      },
       "Bellagio": {
         "$path": "src/server/Bellagio.server.lua"
       },
