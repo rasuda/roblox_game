@@ -29,7 +29,7 @@ if plugins then
 		if tireDisplay and tireDisplay:IsA("GuiObject") then
 			tireDisplay.AnchorPoint = Vector2.new(0.5, 0.5)
 			tireDisplay.Position = UDim2.fromScale(0.10, 0.50)
-			tireDisplay.Size = UDim2.fromScale(0.031, 0.061)
+			tireDisplay.Size = UDim2.fromScale(0.062, 0.122)
 		end
 	end
 	if gForces and gForces:IsA("GuiObject") then
@@ -41,7 +41,7 @@ if plugins then
 		if accelerometer and accelerometer:IsA("GuiObject") then
 			accelerometer.AnchorPoint = Vector2.new(0.5, 0.5)
 			accelerometer.Position = UDim2.fromScale(0.90, 0.50)
-			accelerometer.Size = UDim2.fromScale(0.28, 0.123)
+			accelerometer.Size = UDim2.fromScale(0.56, 0.246)
 		end
 	end
 
@@ -49,8 +49,8 @@ if plugins then
 	local advanced = gauges and gauges:FindFirstChild("Advanced")
 	if advanced and advanced:IsA("GuiObject") then
 		advanced.AnchorPoint = Vector2.new(0.5, 1)
-		advanced.Position = UDim2.fromScale(0.5, 0.90)
-		advanced.Size = UDim2.fromScale(0.28, 0.175)
+		advanced.Position = UDim2.fromScale(0.5, 0.95)
+		advanced.Size = UDim2.fromScale(0.14, 0.0875)
 	end
 end
 
