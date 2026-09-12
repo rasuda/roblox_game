@@ -2,6 +2,12 @@
   "name": "roblox_game",
   "tree": {
     "$className": "DataModel",
+    "ServerStorage": {
+      "$className": "ServerStorage",
+      "AChassisTemplate": {
+        "$path": "vendor/achassis/car.rbxm"
+      }
+    },
     "ServerScriptService": {
       "$className": "ServerScriptService",
       "Main": {
@@ -12,6 +18,9 @@
       },
       "Bellagio": {
         "$path": "src/server/Bellagio.server.lua"
+      },
+      "AChassisDemo": {
+        "$path": "src/server/AChassisDemo.server.lua"
       }
     },
     "StarterPlayer": {
