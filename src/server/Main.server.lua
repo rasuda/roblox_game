@@ -5,6 +5,11 @@ local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local WORLD_NAME = "EmpireStateWorld"
+local ORIGINAL_MAP_SIZE = 420
+local MAP_LINEAR_SCALE = 5
+local MAP_SIZE = ORIGINAL_MAP_SIZE * MAP_LINEAR_SCALE
+local MAP_HALF_EXTENT = MAP_SIZE / 2
+local MAP_SAFE_LIMIT = MAP_HALF_EXTENT - 55
 
 local previousWorld = Workspace:FindFirstChild(WORLD_NAME)
 if previousWorld then
@@ -99,7 +104,17 @@ local function addTier(name, width, depth, height, bottomY, windowColumnsX, wind
 	return tier
 end
 
--- Praça e ruas: dão escala ao edifício e criam uma área segura para o jogador.
+-- A base natural mede 5x em cada eixo: 25x a área original. A região urbana
+-- existente continua asfaltada e nivelada no centro, sem alterar os edifícios.
+local expandedGround = createPart(
+	world,
+	"ExpandedTerrainBase",
+	Vector3.new(MAP_SIZE, 2, MAP_SIZE),
+	Vector3.new(0, -1.1, 0),
+	Color3.fromRGB(91, 111, 73),
+	Enum.Material.Grass
+)
+expandedGround.CastShadow = false
 createPart(world, "Ground", Vector3.new(420, 2, 420), Vector3.new(0, -1, 0), Color3.fromRGB(72, 79, 74), Enum.Material.Asphalt)
 createPart(world, "Plaza", Vector3.new(142, 1, 126), Vector3.new(0, 0.05, 0), Color3.fromRGB(184, 181, 168), Enum.Material.Concrete)
 
@@ -110,6 +125,71 @@ end
 for _, x in ipairs({-90, 90}) do
 	createPart(world, "Sidewalk", Vector3.new(18, 1, 420), Vector3.new(x, 0.1, 0), Color3.fromRGB(154, 154, 150), Enum.Material.Concrete)
 end
+
+-- Colinas internas e uma cadeia montanhosa contínua escondem visualmente os
+-- limites. Poucos volumes grandes de Terrain mantêm o custo baixo no iPhone.
+local terrain = Workspace.Terrain
+local mountainStep = 120
+local mountainStart = -900
+local mountainEnd = 900
+
+local function terrainBall(position, radius, material)
+	terrain:FillBall(position, radius, material)
+end
+
+local function buildMountainSide(axis, direction)
+	local index = 0
+	for along = mountainStart, mountainEnd, mountainStep do
+		index += 1
+		local variation = math.sin(index * 1.71 + (direction > 0 and 0.8 or 2.3))
+		local offset = math.cos(index * 2.13) * 24
+		local outerRadius = 205 + variation * 32
+		local foothillRadius = 82 + math.cos(index * 1.37) * 15
+		local outerCoordinate = direction * 930
+		local innerCoordinate = direction * 715
+
+		local outerPosition
+		local innerPosition
+		if axis == "X" then
+			outerPosition = Vector3.new(outerCoordinate, outerRadius * 0.08 - 18, along + offset)
+			innerPosition = Vector3.new(innerCoordinate, -28, along - offset * 0.5)
+		else
+			outerPosition = Vector3.new(along + offset, outerRadius * 0.08 - 18, outerCoordinate)
+			innerPosition = Vector3.new(along - offset * 0.5, -28, innerCoordinate)
+		end
+
+		terrainBall(outerPosition, outerRadius, index % 3 == 0 and Enum.Material.Slate or Enum.Material.Rock)
+		terrainBall(innerPosition, foothillRadius, Enum.Material.Grass)
+	end
+end
+
+buildMountainSide("X", -1)
+buildMountainSide("X", 1)
+buildMountainSide("Z", -1)
+buildMountainSide("Z", 1)
+
+-- A barreira fica embutida nos picos. Ela impede jogadores e carros de chegar
+-- ao vazio mesmo que encontrem uma passagem entre os volumes de Terrain.
+local boundaries = Instance.new("Model")
+boundaries.Name = "MountainBoundaries"
+boundaries.Parent = world
+
+local function boundary(name, size, position)
+	local wall = createPart(boundaries, name, size, position, Color3.new(1, 1, 1), Enum.Material.SmoothPlastic)
+	wall.Transparency = 1
+	wall.CanCollide = true
+	wall.CanTouch = false
+	wall.CanQuery = false
+	wall.CastShadow = false
+end
+
+local wallHeight = 820
+local wallCenterY = wallHeight / 2
+local wallPosition = MAP_HALF_EXTENT - 12
+boundary("WestBoundary", Vector3.new(18, wallHeight, MAP_SIZE), Vector3.new(-wallPosition, wallCenterY, 0))
+boundary("EastBoundary", Vector3.new(18, wallHeight, MAP_SIZE), Vector3.new(wallPosition, wallCenterY, 0))
+boundary("NorthBoundary", Vector3.new(MAP_SIZE, wallHeight, 18), Vector3.new(0, wallCenterY, -wallPosition))
+boundary("SouthBoundary", Vector3.new(MAP_SIZE, wallHeight, 18), Vector3.new(0, wallCenterY, wallPosition))
 
 -- Corpo escalonado inspirado nas proporções e recuos do Empire State Building.
 addTier("Podium", 84, 70, 30, 0, 9, 7, 3)
@@ -276,7 +356,11 @@ RunService.Heartbeat:Connect(function(deltaTime)
 	local direction = CFrame.Angles(0, carpetHeading, 0).LookVector
 	carpetPosition += direction * throttle * 45 * deltaTime
 	carpetPosition += Vector3.new(0, carpetVertical * 28 * deltaTime, 0)
-	carpetPosition = Vector3.new(carpetPosition.X, math.clamp(carpetPosition.Y, 4, 410), carpetPosition.Z)
+	carpetPosition = Vector3.new(
+		math.clamp(carpetPosition.X, -MAP_SAFE_LIMIT, MAP_SAFE_LIMIT),
+		math.clamp(carpetPosition.Y, 4, 410),
+		math.clamp(carpetPosition.Z, -MAP_SAFE_LIMIT, MAP_SAFE_LIMIT)
+	)
 
 	carpet:PivotTo(CFrame.new(carpetPosition) * CFrame.Angles(0, carpetHeading, 0))
 end)
