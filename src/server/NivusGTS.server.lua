@@ -54,6 +54,7 @@ car.PrimaryPart = chassis
 -- reduzindo bastante o custo e evitando que detalhes prendam no piso.
 local groundCollider = makePart("Part", "GroundCollider", Vector3.new(6.5, 0.7, 11.7), CFrame.new(0, -1.3, 0), BLACK, Enum.Material.SmoothPlastic, true)
 groundCollider.Transparency = 1
+groundCollider.CustomPhysicalProperties = PhysicalProperties.new(0.8, 0.32, 0, 100, 100)
 
 bodyPart("LowerBody", Vector3.new(6.9, 1.35, 11.8), Vector3.new(0, 1.0, 0), BLACK)
 bodyPart("MainBody", Vector3.new(6.55, 1.45, 10.8), Vector3.new(0, 2.05, -0.05), WHITE)
