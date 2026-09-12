@@ -9,7 +9,7 @@ end
 local template = ServerStorage:WaitForChild("AChassisTemplate", 30)
 if not template then return end
 local car = template:Clone()
-car.Name = "AChassisDemo"
+car.Name = "PoloRallyAChassis"
 local seat = car:FindFirstChild("DriveSeat")
 assert(seat and seat:IsA("VehicleSeat"), "A-Chassis DriveSeat missing")
 
@@ -20,9 +20,10 @@ local box, size = car:GetBoundingBox()
 car:PivotTo(car:GetPivot() + Vector3.new(0, 0.5 - (box.Position.Y - size.Y / 2), 0))
 
 local prompt = Instance.new("ProximityPrompt")
+require(script.Parent.PoloRallyBody)(car)
 prompt.Name = "EnterAChassis"
 prompt.ActionText = "Dirigir"
-prompt.ObjectText = "A-Chassis • carro de teste"
+prompt.ObjectText = "VW Polo Rally"
 prompt.MaxActivationDistance = 14
 prompt.RequiresLineOfSight = false
 prompt.Enabled = false
@@ -43,4 +44,4 @@ prompt.Triggered:Connect(function(player)
 	end
 end)
 car.Parent = world
-print("[roblox_game] A-Chassis 1.7.2 demo added; native mobile controls enabled.")
+print("[roblox_game] Polo Rally loaded on A-Chassis 1.7.2 with native mobile controls.")

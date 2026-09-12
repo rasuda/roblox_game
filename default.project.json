@@ -13,8 +13,8 @@
       "Main": {
         "$path": "src/server/Main.server.lua"
       },
-      "NivusGTS": {
-        "$path": "src/server/NivusGTS.server.lua"
+      "PoloRallyBody": {
+        "$path": "src/server/PoloRallyBody.lua"
       },
       "Bellagio": {
         "$path": "src/server/Bellagio.server.lua"
@@ -29,9 +29,6 @@
         "$className": "StarterPlayerScripts",
         "MagicCarpetController": {
           "$path": "src/client/MagicCarpetController.client.lua"
-        },
-        "NivusController": {
-          "$path": "src/client/NivusController.client.lua"
         }
       }
     }
