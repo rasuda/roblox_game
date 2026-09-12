@@ -1,5 +1,4 @@
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
 
 local world = Workspace:WaitForChild("EmpireStateWorld", 20)
@@ -48,8 +47,13 @@ local function bodyPart(name, size, position, color)
 end
 
 -- Chassi e volumes principais, na proporção aproximada 4,27 × 1,76 × 1,50 m.
-local chassis = makePart("Part", "Chassis", Vector3.new(6.8, 0.7, 12.8), CFrame.new(0, 0, 0), BLACK, Enum.Material.Metal, true)
+local chassis = makePart("Part", "Chassis", Vector3.new(6.8, 0.7, 12.8), CFrame.new(0, 0, 0), BLACK, Enum.Material.Metal, false)
 car.PrimaryPart = chassis
+
+-- Unico volume de colisao do carro. As pecas visuais nao participam da fisica,
+-- reduzindo bastante o custo e evitando que detalhes prendam no piso.
+local groundCollider = makePart("Part", "GroundCollider", Vector3.new(6.5, 0.7, 11.7), CFrame.new(0, -1.3, 0), BLACK, Enum.Material.SmoothPlastic, true)
+groundCollider.Transparency = 1
 
 bodyPart("LowerBody", Vector3.new(6.9, 1.35, 11.8), Vector3.new(0, 1.0, 0), BLACK)
 bodyPart("MainBody", Vector3.new(6.55, 1.45, 10.8), Vector3.new(0, 2.05, -0.05), WHITE)
@@ -200,6 +204,37 @@ driverSeat.MaxSpeed = 70
 driverSeat.TurnSpeed = 1.55
 driverSeat.Parent = car
 
+-- O Nivus passa a ser um unico conjunto fisico. Antes ele era ancorado e o
+-- servidor teleportava todas as pecas a cada quadro, causando camera travada.
+for _, object in ipairs(car:GetDescendants()) do
+	if object:IsA("BasePart") and object ~= chassis then
+		object.Anchored = false
+		object.Massless = object ~= groundCollider
+		local weld = Instance.new("WeldConstraint")
+		weld.Name = "CarWeld"
+		weld.Part0 = chassis
+		weld.Part1 = object
+		weld.Parent = chassis
+	end
+end
+chassis.Anchored = false
+chassis.Massless = false
+
+local balanceAttachment = Instance.new("Attachment")
+balanceAttachment.Name = "BalanceAttachment"
+balanceAttachment.Parent = chassis
+
+local stabilizer = Instance.new("AlignOrientation")
+stabilizer.Name = "CarStabilizer"
+stabilizer.Mode = Enum.OrientationAlignmentMode.OneAttachment
+stabilizer.Attachment0 = balanceAttachment
+stabilizer.MaxTorque = 800000
+stabilizer.MaxAngularVelocity = 10
+stabilizer.Responsiveness = 24
+stabilizer.RigidityEnabled = false
+stabilizer.CFrame = CFrame.new()
+stabilizer.Parent = chassis
+
 local drivePrompt = Instance.new("ProximityPrompt")
 drivePrompt.Name = "DrivePrompt"
 drivePrompt.ActionText = "Dirigir"
@@ -222,37 +257,15 @@ end)
 
 driverSeat:GetPropertyChangedSignal("Occupant"):Connect(function()
 	drivePrompt.Enabled = driverSeat.Occupant == nil
-end)
-
-local carPosition = startCFrame.Position
-local carHeading = 0
-
-RunService.Heartbeat:Connect(function(deltaTime)
-	if not driverSeat.Occupant then
-		return
+	local occupant = driverSeat.Occupant
+	local player = occupant and Players:GetPlayerFromCharacter(occupant.Parent)
+	if player then
+		-- A simulacao acontece no aparelho de quem dirige. Assim a camera recebe
+		-- o movimento imediatamente, sem esperar cada ida e volta ao servidor.
+		chassis:SetNetworkOwner(player)
+	else
+		chassis:SetNetworkOwnershipAuto()
 	end
-
-	local throttle = driverSeat.ThrottleFloat
-	local steering = driverSeat.SteerFloat
-	local movementFactor = math.max(math.abs(throttle), 0.22)
-	carHeading += -steering * 1.55 * movementFactor * deltaTime
-
-	local direction = CFrame.Angles(0, carHeading, 0).LookVector
-	local speed = throttle >= 0 and 70 or 34
-	local proposed = carPosition + direction * throttle * speed * deltaTime
-	proposed = Vector3.new(
-		math.clamp(proposed.X, -195, 195),
-		carPosition.Y,
-		math.clamp(proposed.Z, -195, 195)
-	)
-
-	-- Impede que o carro atravesse o volume principal do edifício.
-	local insideBuilding = math.abs(proposed.X) < 49 and math.abs(proposed.Z) < 42
-	if not insideBuilding then
-		carPosition = proposed
-	end
-
-	car:PivotTo(CFrame.new(carPosition) * CFrame.Angles(0, carHeading, 0))
 end)
 
 -- Placa de identificação acima do carro estacionado.

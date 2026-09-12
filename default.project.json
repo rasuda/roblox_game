@@ -20,6 +20,9 @@
         "$className": "StarterPlayerScripts",
         "MagicCarpetController": {
           "$path": "src/client/MagicCarpetController.client.lua"
+        },
+        "NivusController": {
+          "$path": "src/client/NivusController.client.lua"
         }
       }
     }
