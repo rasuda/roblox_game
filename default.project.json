@@ -32,6 +32,9 @@
       },
       "AChassisDemo": {
         "$path": "src/server/AChassisDemo.server.lua"
+      },
+      "F1Track": {
+        "$path": "src/server/F1Track.server.lua"
       }
     },
     "StarterPlayer": {
