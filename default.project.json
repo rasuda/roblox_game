@@ -38,6 +38,9 @@
       },
       "CityCircuit": {
         "$path": "src/server/CityCircuit.server.lua"
+      },
+      "FootballLineup": {
+        "$path": "src/server/FootballLineup.server.lua"
       }
     },
     "StarterPlayer": {
