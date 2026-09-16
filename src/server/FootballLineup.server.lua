@@ -129,17 +129,17 @@ goal("NorthGoal", -1)
 goal("SouthGoal", 1)
 
 local players = {
-	{name = "ALISSON", overall = 89, position = "GK", number = 1, country = "BRASIL", initials = "AB", x = 0, z = 72, accent = Color3.fromRGB(70, 172, 226)},
-	{name = "MARCELO", overall = 91, position = "LB", number = 6, country = "BRASIL", initials = "M", x = -43, z = 42, accent = Color3.fromRGB(48, 164, 95)},
-	{name = "VAN DIJK", overall = 91, position = "CB", number = 4, country = "HOLANDA", initials = "VD", x = -15, z = 42, accent = Color3.fromRGB(242, 132, 48)},
-	{name = "RÚBEN DIAS", overall = 90, position = "CB", number = 3, country = "PORTUGAL", initials = "RD", x = 15, z = 42, accent = Color3.fromRGB(194, 53, 50)},
-	{name = "HAKIMI", overall = 89, position = "RB", number = 2, country = "MARROCOS", initials = "AH", x = 43, z = 42, accent = Color3.fromRGB(184, 40, 46)},
-	{name = "MODRIĆ", overall = 92, position = "CM", number = 10, country = "CROÁCIA", initials = "LM", x = -32, z = 6, accent = Color3.fromRGB(221, 68, 70)},
-	{name = "NEYMAR JR", overall = 93, position = "CAM", number = 10, country = "BRASIL", initials = "NJ", x = 0, z = 1, accent = Color3.fromRGB(54, 177, 91)},
-	{name = "DE BRUYNE", overall = 92, position = "CM", number = 17, country = "BÉLGICA", initials = "KD", x = 32, z = 6, accent = Color3.fromRGB(236, 190, 49)},
-	{name = "VINI JR.", overall = 94, position = "LW", number = 7, country = "BRASIL", initials = "VJ", x = -40, z = -42, accent = Color3.fromRGB(46, 177, 91)},
-	{name = "CRISTIANO RONALDO", overall = 95, position = "ST", number = 7, country = "PORTUGAL", initials = "CR", x = 0, z = -48, accent = Color3.fromRGB(202, 47, 52)},
-	{name = "MESSI", overall = 95, position = "RW", number = 10, country = "ARGENTINA", initials = "LM", x = 40, z = -42, accent = Color3.fromRGB(81, 177, 221)},
+	{name = "ALISSON", overall = 89, position = "GK", number = 1, country = "BRASIL", initials = "AB", imageId = 108166970890392, x = 0, z = 72, accent = Color3.fromRGB(70, 172, 226)},
+	{name = "MARCELO", overall = 91, position = "LB", number = 6, country = "BRASIL", initials = "M", imageId = 4735105447, x = -43, z = 42, accent = Color3.fromRGB(48, 164, 95)},
+	{name = "VAN DIJK", overall = 91, position = "CB", number = 4, country = "HOLANDA", initials = "VD", imageId = 11331115474, x = -15, z = 42, accent = Color3.fromRGB(242, 132, 48)},
+	{name = "SERGIO RAMOS", overall = 90, position = "CB", number = 4, country = "ESPANHA", initials = "SR", imageId = 14701191571, x = 15, z = 42, accent = Color3.fromRGB(194, 53, 50)},
+	{name = "HAKIMI", overall = 89, position = "RB", number = 2, country = "MARROCOS", initials = "AH", imageId = 13354114021, x = 43, z = 42, accent = Color3.fromRGB(184, 40, 46)},
+	{name = "MODRIĆ", overall = 92, position = "CM", number = 10, country = "CROÁCIA", initials = "LM", imageId = 13128194789, x = -32, z = 6, accent = Color3.fromRGB(221, 68, 70)},
+	{name = "NEYMAR JR", overall = 93, position = "CAM", number = 10, country = "BRASIL", initials = "NJ", imageId = 11636052884, x = 0, z = 1, accent = Color3.fromRGB(54, 177, 91)},
+	{name = "DE BRUYNE", overall = 92, position = "CM", number = 17, country = "BÉLGICA", initials = "KD", imageId = 11722905400, x = 32, z = 6, accent = Color3.fromRGB(236, 190, 49)},
+	{name = "VINI JR.", overall = 94, position = "LW", number = 7, country = "BRASIL", initials = "VJ", imageId = 12956661896, x = -40, z = -42, accent = Color3.fromRGB(46, 177, 91)},
+	{name = "CRISTIANO RONALDO", overall = 95, position = "ST", number = 7, country = "PORTUGAL", initials = "CR", imageId = 12175137633, x = 0, z = -48, accent = Color3.fromRGB(202, 47, 52)},
+	{name = "MESSI", overall = 95, position = "RW", number = 10, country = "ARGENTINA", initials = "LM", imageId = 14408858856, x = 40, z = -42, accent = Color3.fromRGB(81, 177, 221)},
 }
 
 local function addText(parent, text, position, size, font, color, scaled)
@@ -188,15 +188,28 @@ local function drawCard(surface, player)
 	portrait.BorderSizePixel = 0
 	portrait.Parent = root
 	local portraitCorner = Instance.new("UICorner")
-	portraitCorner.CornerRadius = UDim.new(0.5, 0)
+	portraitCorner.CornerRadius = UDim.new(0.08, 0)
 	portraitCorner.Parent = portrait
+	-- The initials remain behind the photograph as a graceful fallback if a
+	-- community image is ever moderated or removed from the Creator Store.
 	addText(portrait, player.initials, UDim2.fromScale(0.12, 0.18), UDim2.fromScale(0.76, 0.52), Enum.Font.GothamBlack, NAVY)
+	local photograph = Instance.new("ImageLabel")
+	photograph.Name = "PlayerPhoto"
+	photograph.Size = UDim2.fromScale(1, 1)
+	photograph.BackgroundTransparency = 1
+	photograph.Image = "rbxassetid://" .. tostring(player.imageId)
+	photograph.ScaleType = Enum.ScaleType.Crop
+	photograph.Parent = portrait
+	local photoCorner = Instance.new("UICorner")
+	photoCorner.CornerRadius = UDim.new(0.08, 0)
+	photoCorner.Parent = photograph
 
 	local jersey = Instance.new("Frame")
 	jersey.Position = UDim2.fromScale(0.22, 0.68)
 	jersey.Size = UDim2.fromScale(0.56, 0.25)
 	jersey.BackgroundColor3 = player.accent
 	jersey.BorderSizePixel = 0
+	jersey.ZIndex = 3
 	jersey.Parent = portrait
 	local jerseyCorner = Instance.new("UICorner")
 	jerseyCorner.CornerRadius = UDim.new(0.25, 0)
