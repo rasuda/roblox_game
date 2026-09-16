@@ -104,30 +104,29 @@ local function addTier(name, width, depth, height, bottomY, windowColumnsX, wind
 	return tier
 end
 
--- A base natural mede 5x em cada eixo: 25x a área original. A região urbana
--- existente continua asfaltada e nivelada no centro, sem alterar os edifícios.
-local expandedGround = createPart(
+-- Uma única base contínua elimina a emenda e o pequeno degrau que existiam
+-- entre a cidade e a expansão. Todo o piso jogável usa o mesmo asfalto.
+local ground = createPart(
 	world,
-	"ExpandedTerrainBase",
+	"Ground",
 	Vector3.new(MAP_SIZE, 2, MAP_SIZE),
-	Vector3.new(0, -1.1, 0),
-	Color3.fromRGB(91, 111, 73),
-	Enum.Material.Grass
+	Vector3.new(0, -1, 0),
+	Color3.fromRGB(72, 79, 74),
+	Enum.Material.Asphalt
 )
-expandedGround.CastShadow = false
-createPart(world, "Ground", Vector3.new(420, 2, 420), Vector3.new(0, -1, 0), Color3.fromRGB(72, 79, 74), Enum.Material.Asphalt)
-createPart(world, "Plaza", Vector3.new(142, 1, 126), Vector3.new(0, 0.05, 0), Color3.fromRGB(184, 181, 168), Enum.Material.Concrete)
+ground.CastShadow = false
+createPart(world, "Plaza", Vector3.new(142, 0.08, 126), Vector3.new(0, 0.04, 0), Color3.fromRGB(184, 181, 168), Enum.Material.Concrete)
 
 for _, z in ipairs({-77, 77}) do
-	createPart(world, "Sidewalk", Vector3.new(420, 1, 18), Vector3.new(0, 0.1, z), Color3.fromRGB(154, 154, 150), Enum.Material.Concrete)
+	createPart(world, "Sidewalk", Vector3.new(420, 0.08, 18), Vector3.new(0, 0.04, z), Color3.fromRGB(154, 154, 150), Enum.Material.Concrete)
 end
 
 for _, x in ipairs({-90, 90}) do
-	createPart(world, "Sidewalk", Vector3.new(18, 1, 420), Vector3.new(x, 0.1, 0), Color3.fromRGB(154, 154, 150), Enum.Material.Concrete)
+	createPart(world, "Sidewalk", Vector3.new(18, 0.08, 420), Vector3.new(x, 0.04, 0), Color3.fromRGB(154, 154, 150), Enum.Material.Concrete)
 end
 
--- Colinas internas e uma cadeia montanhosa contínua escondem visualmente os
--- limites. Poucos volumes grandes de Terrain mantêm o custo baixo no iPhone.
+-- A cadeia montanhosa externa esconde visualmente os limites. O interior fica
+-- completamente plano; poucos volumes grandes mantêm o custo baixo no iPhone.
 local terrain = Workspace.Terrain
 local mountainStep = 120
 local mountainStart = -900
@@ -144,22 +143,16 @@ local function buildMountainSide(axis, direction)
 		local variation = math.sin(index * 1.71 + (direction > 0 and 0.8 or 2.3))
 		local offset = math.cos(index * 2.13) * 24
 		local outerRadius = 205 + variation * 32
-		local foothillRadius = 82 + math.cos(index * 1.37) * 15
 		local outerCoordinate = direction * 930
-		local innerCoordinate = direction * 715
 
 		local outerPosition
-		local innerPosition
 		if axis == "X" then
 			outerPosition = Vector3.new(outerCoordinate, outerRadius * 0.08 - 18, along + offset)
-			innerPosition = Vector3.new(innerCoordinate, -28, along - offset * 0.5)
 		else
 			outerPosition = Vector3.new(along + offset, outerRadius * 0.08 - 18, outerCoordinate)
-			innerPosition = Vector3.new(along - offset * 0.5, -28, innerCoordinate)
 		end
 
 		terrainBall(outerPosition, outerRadius, index % 3 == 0 and Enum.Material.Slate or Enum.Material.Rock)
-		terrainBall(innerPosition, foothillRadius, Enum.Material.Grass)
 	end
 end
 
