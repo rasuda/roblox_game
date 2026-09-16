@@ -61,8 +61,8 @@ local function wedge(name, position, width, height, length, yaw)
 	end
 end
 
-local WEST_LOOP_BOTTOM = Vector3.new(-510, -0.48, 430)
-local EAST_LOOP_BOTTOM = Vector3.new(510, -0.48, -430)
+local WEST_LOOP_BOTTOM = Vector3.new(-620, -0.48, 590)
+local EAST_LOOP_BOTTOM = Vector3.new(620, -0.48, -590)
 local LOOP_CLEARANCE = 105
 local LOOP_POSITIONS = {WEST_LOOP_BOTTOM, EAST_LOOP_BOTTOM}
 
@@ -70,6 +70,12 @@ local reserved = {}
 local function isClear(candidate, clearance)
 	-- Keep the city, hotel, vehicle spawn and flying carpet unobstructed.
 	if math.abs(candidate.X) < 365 and math.abs(candidate.Z) < 335 then
+		return false
+	end
+	-- Reserve a broad, uninterrupted ring for the closed urban circuit.
+	local insideCircuitOuter = math.abs(candidate.X) < 555 and math.abs(candidate.Z) < 515
+	local outsideCircuitInner = math.abs(candidate.X) > 375 or math.abs(candidate.Z) > 345
+	if insideCircuitOuter and outsideCircuitInner then
 		return false
 	end
 	for _, loopPosition in LOOP_POSITIONS do

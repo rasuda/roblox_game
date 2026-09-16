@@ -35,6 +35,9 @@
       },
       "RampPark": {
         "$path": "src/server/RampPark.server.lua"
+      },
+      "CityCircuit": {
+        "$path": "src/server/CityCircuit.server.lua"
       }
     },
     "StarterPlayer": {
