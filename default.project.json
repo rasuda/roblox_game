@@ -32,6 +32,9 @@
       },
       "AChassisDemo": {
         "$path": "src/server/AChassisDemo.server.lua"
+      },
+      "RampPark": {
+        "$path": "src/server/RampPark.server.lua"
       }
     },
     "StarterPlayer": {
