@@ -197,7 +197,9 @@ local function drawCard(surface, player)
 	photograph.Name = "PlayerPhoto"
 	photograph.Size = UDim2.fromScale(1, 1)
 	photograph.BackgroundTransparency = 1
-	photograph.Image = "rbxassetid://" .. tostring(player.imageId)
+	-- These are public Decal IDs. ImageLabel cannot render a Decal container
+	-- through rbxassetid, but Roblox's own thumbnail resolver renders it safely.
+	photograph.Image = "rbxthumb://type=Asset&id=" .. tostring(player.imageId) .. "&w=420&h=420"
 	photograph.ScaleType = Enum.ScaleType.Crop
 	photograph.Parent = portrait
 	local photoCorner = Instance.new("UICorner")
