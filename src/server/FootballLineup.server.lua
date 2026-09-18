@@ -1,6 +1,8 @@
 -- Original 2D football-card exhibition. It uses no external images or copied
 -- card artwork, keeping the lineup lightweight and reliable on mobile.
 local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 
 local world = Workspace:WaitForChild("EmpireStateWorld", 30)
 if not world or not world:WaitForChild("Ground", 30) then
@@ -226,8 +228,82 @@ local cards = Instance.new("Model")
 cards.Name = "StartingElevenCards"
 cards.Parent = exhibition
 
+local heldByPlayer = {}
+local holderByCard = {}
+local prompts = {}
+
+local function setCollision(cardModel, enabled)
+	for _, descendant in ipairs(cardModel:GetDescendants()) do
+		if descendant:IsA("BasePart") then
+			descendant.CanCollide = enabled
+			descendant.CanTouch = enabled
+		end
+	end
+end
+
+local function dropCard(player)
+	local cardModel = heldByPlayer[player]
+	if not cardModel or not cardModel.PrimaryPart then return end
+
+	local character = player.Character
+	local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+	local desiredPosition = cardModel.PrimaryPart.Position
+	local forward = Vector3.new(0, 0, -1)
+	if rootPart then
+		desiredPosition = rootPart.Position + rootPart.CFrame.LookVector * 11
+		forward = Vector3.new(rootPart.CFrame.LookVector.X, 0, rootPart.CFrame.LookVector.Z)
+		if forward.Magnitude < 0.1 then forward = Vector3.new(0, 0, -1) end
+		forward = forward.Unit
+	end
+
+	local raycastParameters = RaycastParams.new()
+	raycastParameters.FilterType = Enum.RaycastFilterType.Exclude
+	raycastParameters.FilterDescendantsInstances = {cardModel, character}
+	local raycast = Workspace:Raycast(
+		Vector3.new(desiredPosition.X, desiredPosition.Y + 80, desiredPosition.Z),
+		Vector3.new(0, -220, 0),
+		raycastParameters
+	)
+	local groundY = raycast and raycast.Position.Y or 0
+	local cardPosition = Vector3.new(desiredPosition.X, groundY + 9.4, desiredPosition.Z)
+	cardModel:SetPrimaryPartCFrame(CFrame.lookAt(cardPosition, cardPosition + forward, Vector3.yAxis))
+
+	heldByPlayer[player] = nil
+	holderByCard[cardModel] = nil
+	cardModel:SetAttribute("HeldBy", nil)
+	setCollision(cardModel, true)
+	local prompt = prompts[cardModel]
+	if prompt then
+		prompt.ActionText = "Pegar card"
+		prompt.ObjectText = cardModel.Name
+	end
+end
+
+local function pickUpCard(player, cardModel)
+	local currentHolder = holderByCard[cardModel]
+	if currentHolder and currentHolder ~= player then return end
+	if heldByPlayer[player] == cardModel then
+		dropCard(player)
+		return
+	end
+	if heldByPlayer[player] then dropCard(player) end
+
+	heldByPlayer[player] = cardModel
+	holderByCard[cardModel] = player
+	cardModel:SetAttribute("HeldBy", player.UserId)
+	setCollision(cardModel, false)
+	local prompt = prompts[cardModel]
+	if prompt then
+		prompt.ActionText = "Soltar card"
+		prompt.ObjectText = cardModel.Name
+	end
+end
+
 for _, player in ipairs(players) do
 	local position = CENTER + Vector3.new(player.x, 9.4, player.z)
+	local cardModel = Instance.new("Model")
+	cardModel.Name = player.name
+	cardModel.Parent = cards
 	local card = part(
 		player.name,
 		Vector3.new(12, 18, 0.7),
@@ -236,7 +312,8 @@ for _, player in ipairs(players) do
 		Enum.Material.SmoothPlastic,
 		true
 	)
-	card.Parent = cards
+	card.Parent = cardModel
+	cardModel.PrimaryPart = card
 
 	for _, face in ipairs({Enum.NormalId.Front, Enum.NormalId.Back}) do
 		local surface = Instance.new("SurfaceGui")
@@ -249,14 +326,47 @@ for _, player in ipairs(players) do
 		drawCard(surface, player)
 	end
 
-	part(
+	local stand = part(
 		"CardStand",
 		Vector3.new(14, 0.7, 4),
 		CFrame.new(position.X, 0.6, position.Z),
 		GOLD,
 		Enum.Material.Metal,
 		true
-	).Parent = cards
+	)
+	stand.Parent = cardModel
+
+	local prompt = Instance.new("ProximityPrompt")
+	prompt.Name = "MoveCardPrompt"
+	prompt.ActionText = "Pegar card"
+	prompt.ObjectText = player.name
+	prompt.KeyboardKeyCode = Enum.KeyCode.E
+	prompt.GamepadKeyCode = Enum.KeyCode.ButtonX
+	prompt.HoldDuration = 0.15
+	prompt.MaxActivationDistance = 16
+	prompt.RequiresLineOfSight = false
+	prompt.Parent = card
+	prompts[cardModel] = prompt
+	prompt.Triggered:Connect(function(triggeringPlayer)
+		pickUpCard(triggeringPlayer, cardModel)
+	end)
 end
+
+RunService.Heartbeat:Connect(function()
+	for player, cardModel in pairs(heldByPlayer) do
+		local character = player.Character
+		local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+		local rootPart = character and character:FindFirstChild("HumanoidRootPart")
+		if not rootPart or not humanoid or humanoid.Health <= 0 or not cardModel.Parent then
+			dropCard(player)
+		else
+			cardModel:SetPrimaryPartCFrame(rootPart.CFrame * CFrame.new(0, 6, -10))
+		end
+	end
+end)
+
+Players.PlayerRemoving:Connect(function(player)
+	if heldByPlayer[player] then dropCard(player) end
+end)
 
 print("[roblox_game] Football field and 11-player card lineup loaded.")
