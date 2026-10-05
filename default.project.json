@@ -1,5 +1,5 @@
 {
-  "name": "roblox_game",
+  "name": "Football Transfer Heist",
   "tree": {
     "$className": "DataModel",
     "Workspace": {
@@ -7,49 +7,27 @@
       "$properties": {
         "StreamingEnabled": true,
         "StreamingMinRadius": 128,
-        "StreamingTargetRadius": 512
+        "StreamingTargetRadius": 384
       }
     },
-    "ServerStorage": {
-      "$className": "ServerStorage",
-      "AChassisTemplate": {
-        "$path": "vendor/achassis/car.rbxm"
+    "ReplicatedStorage": {
+      "$className": "ReplicatedStorage",
+      "TransferGame": {
+        "$path": "game/replicated"
       }
     },
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "Main": {
-        "$path": "src/server/Main.server.lua"
-      },
-      "PoloRallyBody": {
-        "$path": "src/server/PoloRallyBody.lua"
-      },
-      "LowPolyCarBody": {
-        "$path": "src/server/LowPolyCarBody.lua"
-      },
-      "Bellagio": {
-        "$path": "src/server/Bellagio.server.lua"
-      },
-      "AChassisDemo": {
-        "$path": "src/server/AChassisDemo.server.lua"
-      },
-      "RampPark": {
-        "$path": "src/server/RampPark.server.lua"
-      },
-      "CityCircuit": {
-        "$path": "src/server/CityCircuit.server.lua"
-      },
-      "FootballLineup": {
-        "$path": "src/server/FootballLineup.server.lua"
+      "TransferGame": {
+        "$path": "game/server"
       }
     },
     "StarterPlayer": {
       "$className": "StarterPlayer",
+      "$properties": {"CharacterWalkSpeed": 16},
       "StarterPlayerScripts": {
         "$className": "StarterPlayerScripts",
-        "MagicCarpetController": {
-          "$path": "src/client/MagicCarpetController.client.lua"
-        }
+        "TransferGame": {"$path": "game/client"}
       }
     }
   }

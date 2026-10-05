@@ -1,43 +1,31 @@
-# roblox_game
+# Football Transfer Heist
 
-Jogo Roblox desenvolvido por código e publicado automaticamente com Rojo,
-GitHub Actions e Roblox Open Cloud.
+Branch: `football-transfer-game`
 
-## Versão atual
+Protótipo multiplayer mobile-first de coleção, roubo de contratos, perseguição e progressão com jogadores de futebol fictícios.
 
-Primeira versão do Empire State Building:
+## Vertical slice atual
 
-- exterior Art Déco escalonado;
-- fachada de pedra com janelas em quatro lados;
-- algumas janelas iluminadas;
-- entrada, marquises e plataformas de observação;
-- torre, antena e luz de sinalização;
-- praça, calçadas e ponto inicial com visão frontal.
-- tapete voador arco-íris gratuito, controlável pelo joystick, com botões para subir e descer.
-- VW Nivus GTS 2026 dirigível, com carroceria cupê, teto preto, rodas GTS e iluminação em LED.
+- duas bases atribuídas automaticamente;
+- uma zona Street com três contratos;
+- contrato server-authoritative com estados explícitos;
+- carregar, derrubar, recuperar e depositar;
+- um Guardian com estados de perseguição;
+- Safe Zones;
+- Signing e Reveal;
+- renda passiva agregada;
+- treino de Speed e upgrade de treinamento;
+- Slide Tackle com validação e cooldown;
+- Transfer Window global;
+- persistência com schema versionado e autosave;
+- HUD responsiva criada por código.
 
-O interior ainda não faz parte desta primeira versão.
+## Desenvolvimento
 
-## Como testar com Rojo
-
-1. Instale o plugin **Rojo** no Roblox Studio.
-2. Instale o Rojo no computador.
-3. Abra este repositório em um terminal e execute:
-
-   ```bash
-   rojo serve
-   ```
-
-4. No Roblox Studio, abra a experiência.
-5. Abra o plugin Rojo, conecte em `localhost:34872` e sincronize.
-6. Clique em **Play**.
-
-## Alternativa: gerar um arquivo para abrir no Studio
-
-Com o Rojo instalado, execute:
-
-```bash
-rojo build -o roblox_game.rbxlx
+```text
+rojo serve default.project.json
 ```
 
-Depois, abra `roblox_game.rbxlx` no Roblox Studio e clique em **Play**.
+Para testar multiplayer no Studio, use **Test → Start** com dois jogadores.
+
+Documentação curta em [`docs/`](docs/).
