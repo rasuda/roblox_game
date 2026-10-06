@@ -1,5 +1,5 @@
 {
-  "name": "Football Transfer Rivals",
+  "name": "Football Transfer Terrain",
   "tree": {
     "$className": "DataModel",
     "Workspace": {
@@ -10,24 +10,10 @@
         "StreamingTargetRadius": 384
       }
     },
-    "ReplicatedStorage": {
-      "$className": "ReplicatedStorage",
-      "TransferGame": {
-        "$path": "game/replicated"
-      }
-    },
     "ServerScriptService": {
       "$className": "ServerScriptService",
-      "TransferGame": {
-        "$path": "game/server"
-      }
-    },
-    "StarterPlayer": {
-      "$className": "StarterPlayer",
-      "$properties": {"CharacterWalkSpeed": 16},
-      "StarterPlayerScripts": {
-        "$className": "StarterPlayerScripts",
-        "TransferGame": {"$path": "game/client"}
+      "TerrainBuilder": {
+        "$path": "terrain/TerrainBuilder.server.lua"
       }
     }
   }

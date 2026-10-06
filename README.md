@@ -1,17 +1,16 @@
-# Football Transfer Rivals
+# Football Game — Terrain Prototype
 
-Jogo Roblox multiplayer mobile-first sobre coleção, roubo de contratos, perseguição e evolução de clubes fictícios.
+Reinício do projeto com apenas o terreno graybox baseado na referência em vídeo.
 
-## MVP v2
+## Conteúdo atual
 
-- 6 clubes e Safe Zones;
-- 4 zonas progressivas e 24 jogadores fictícios;
-- contratos compartilhados, 4 Guardians, carry, drop e tackle;
-- Signing, Reveal, Rating, Potential e Editions;
-- renda passiva e showroom físico;
-- treino, chuteiras, upgrades e slots de 6 a 20;
-- Player Album e DataStore versionado;
-- interface mobile e PC.
+- ilha inicial flutuante;
+- seis lotes vazios para futuras bases;
+- corredor longo com paredes e acabamento neon;
+- sete biomas: Forest, Jungle, Ice, Volcano, Ocean, Prehistoric e Space;
+- plataforma final;
+- ponto de nascimento;
+- nenhuma UI ou mecânica de gameplay.
 
 ## Desenvolvimento
 
@@ -19,4 +18,8 @@ Jogo Roblox multiplayer mobile-first sobre coleção, roubo de contratos, perseg
 rojo serve default.project.json
 ```
 
-Teste multiplayer no Studio em **Test → Start** com dois a seis jogadores. Veja `docs/TESTING.md`.
+O arquivo do jogo pode ser gerado com:
+
+```text
+rojo build default.project.json -o football-terrain.rbxlx
+```
