@@ -8,7 +8,7 @@ function EconomyService:CalculateInstanceIncome(instance)
 	local definition = config.Players[instance.DefinitionId]
 	if not definition then return 0 end
 	local rarity = config.Rarity.Definitions[definition.Rarity]
-	local edition = config.Economy.Editions[instance.Edition] or config.Economy.Editions.Normal
+	local edition = config.Editions.Definitions[instance.Edition] or config.Editions.Definitions.Normal
 	local ratingMultiplier = 1 + math.max(0, instance.Rating - config.Economy.RatingBaseline) * config.Economy.RatingIncomePerPoint
 	return definition.BaseIncome * rarity.IncomeMultiplier * ratingMultiplier * edition.Multiplier
 end
@@ -26,7 +26,8 @@ function EconomyService:GetIncomePerSecond(player)
 			total += instance.Income
 		end
 	end
-	return total
+	local multiplier = self.Context.Config.Economy.CashMultipliers[(profile.Upgrades.CashMultiplier or 0)+1] or 1
+	return total * multiplier
 end
 
 function EconomyService:Refresh(player)
@@ -36,8 +37,20 @@ function EconomyService:Refresh(player)
 	return income
 end
 
+function EconomyService:SellWeakest(player)
+	local profile=self.Context.Services.PlayerData:Get(player) if not profile or #profile.OwnedPlayers==0 then return end
+	local weakestIndex,weakest
+	for index,instance in ipairs(profile.OwnedPlayers) do if not weakest or (instance.Income or self:CalculateInstanceIncome(instance))<(weakest.Income or self:CalculateInstanceIncome(weakest)) then weakestIndex,weakest=index,instance end end
+	if not weakest then return end table.remove(profile.OwnedPlayers,weakestIndex)
+	for index,id in ipairs(profile.ActiveLineup) do if id==weakest.InstanceId then table.remove(profile.ActiveLineup,index) break end end
+	local value=math.max(1,math.floor(self:CalculateInstanceIncome(weakest)*self.Context.Config.Upgrades.SellReturnMultiplier))
+	self.Context.Services.PlayerData:AddMoney(player,value) self:Refresh(player) self.Context.Services.Club:RenderLineup(player,profile)
+	self.Context.Remotes.Notification:FireClient(player,"Released weakest player for $"..value..".","Success")
+end
+
 function EconomyService:Init(context)
 	self.Context = context
+	context.Remotes.SellWeakest.OnServerEvent:Connect(function(player) self:SellWeakest(player) end)
 	task.spawn(function()
 		while task.wait(context.Config.Game.EconomyTickSeconds) do
 			for _, player in ipairs(Players:GetPlayers()) do

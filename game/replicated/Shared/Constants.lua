@@ -9,7 +9,7 @@ local Constants = {
 	},
 	RemoteNames = {
 		StateUpdate = "StateUpdate", Notification = "Notification", Reveal = "Reveal",
-		TransferWindow = "TransferWindow", SlideTackle = "SlideTackle",
+		TransferWindow = "TransferWindow", SlideTackle = "SlideTackle", SellWeakest = "SellWeakest",
 	},
 }
 return table.freeze(Constants)

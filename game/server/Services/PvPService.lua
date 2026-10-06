@@ -6,7 +6,7 @@ PvPService.LastUse = {}
 
 function PvPService:FindTarget(attacker, origin)
 	local bestPlayer, bestDistance
-	for carrier in pairs(self.Context.Services.Contracts.CarrierContracts) do
+	for carrier in pairs(self.Context.Services.Contracts.Carried) do
 		if carrier ~= attacker then
 			local root = carrier.Character and carrier.Character:FindFirstChild("HumanoidRootPart")
 			local humanoid = carrier.Character and carrier.Character:FindFirstChildOfClass("Humanoid")
@@ -32,16 +32,17 @@ function PvPService:SlideTackle(player)
 	root.AssemblyLinearVelocity += root.CFrame.LookVector * 18
 	local target = self:FindTarget(player, root.Position)
 	if not target then
-		self.Context.Remotes.Notification:FireClient(player, "Slide tackle: nenhum portador ao alcance.", "Info")
+		self.Context.Remotes.Notification:FireClient(player, "Slide tackle: no carrier in range.", "Info")
 		return
 	end
 	local targetRoot = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
 	if not targetRoot then return end
-	if self.Context.Services.Contracts:Drop(target, "slide tackle de " .. player.DisplayName) then
+	if self.Context.Services.Contracts:Drop(target, "slide tackle by " .. player.DisplayName) then
 		local direction = targetRoot.Position - root.Position
 		if direction.Magnitude < 0.05 then direction = root.CFrame.LookVector else direction = direction.Unit end
 		targetRoot.AssemblyLinearVelocity += direction * self.Context.Config.Game.SlideKnockback + Vector3.new(0, 12, 0)
-		self.Context.Remotes.Notification:FireClient(player, "Contrato interceptado!", "Success")
+		local profile=self.Context.Services.PlayerData:Get(player) if profile then profile.Statistics.Tackles+=1 end
+		self.Context.Remotes.Notification:FireClient(player, "Contract intercepted!", "Success")
 	end
 end
 

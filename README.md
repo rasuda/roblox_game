@@ -1,24 +1,17 @@
-# Football Transfer Heist
+# Football Transfer Rivals
 
-Branch: `football-transfer-game`
+Jogo Roblox multiplayer mobile-first sobre coleção, roubo de contratos, perseguição e evolução de clubes fictícios.
 
-Protótipo multiplayer mobile-first de coleção, roubo de contratos, perseguição e progressão com jogadores de futebol fictícios.
+## MVP v2
 
-## Vertical slice atual
-
-- duas bases atribuídas automaticamente;
-- uma zona Street com três contratos;
-- contrato server-authoritative com estados explícitos;
-- carregar, derrubar, recuperar e depositar;
-- um Guardian com estados de perseguição;
-- Safe Zones;
-- Signing e Reveal;
-- renda passiva agregada;
-- treino de Speed e upgrade de treinamento;
-- Slide Tackle com validação e cooldown;
-- Transfer Window global;
-- persistência com schema versionado e autosave;
-- HUD responsiva criada por código.
+- 6 clubes e Safe Zones;
+- 4 zonas progressivas e 24 jogadores fictícios;
+- contratos compartilhados, 4 Guardians, carry, drop e tackle;
+- Signing, Reveal, Rating, Potential e Editions;
+- renda passiva e showroom físico;
+- treino, chuteiras, upgrades e slots de 6 a 20;
+- Player Album e DataStore versionado;
+- interface mobile e PC.
 
 ## Desenvolvimento
 
@@ -26,6 +19,4 @@ Protótipo multiplayer mobile-first de coleção, roubo de contratos, perseguiç
 rojo serve default.project.json
 ```
 
-Para testar multiplayer no Studio, use **Test → Start** com dois jogadores.
-
-Documentação curta em [`docs/`](docs/).
+Teste multiplayer no Studio em **Test → Start** com dois a seis jogadores. Veja `docs/TESTING.md`.

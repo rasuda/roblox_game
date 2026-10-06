@@ -1,11 +1,11 @@
 return table.freeze({
 	Order = {"Rookie", "Pro", "Star", "Elite", "Legend", "Icon"},
 	Definitions = {
-		Rookie = {IncomeMultiplier = 1, DifficultyMultiplier = 1, Color = Color3.fromRGB(175, 183, 190)},
-		Pro = {IncomeMultiplier = 1.35, DifficultyMultiplier = 1.05, Color = Color3.fromRGB(74, 154, 222)},
-		Star = {IncomeMultiplier = 2.1, DifficultyMultiplier = 1.15, Color = Color3.fromRGB(176, 85, 221)},
-		Elite = {IncomeMultiplier = 3.4, DifficultyMultiplier = 1.28, Color = Color3.fromRGB(236, 142, 43)},
-		Legend = {IncomeMultiplier = 6, DifficultyMultiplier = 1.45, Color = Color3.fromRGB(245, 209, 65)},
-		Icon = {IncomeMultiplier = 10, DifficultyMultiplier = 1.65, Color = Color3.fromRGB(239, 239, 225)},
+		Rookie = {Weight=50, IncomeMultiplier=1, Color=Color3.fromRGB(176,184,191)},
+		Pro = {Weight=28, IncomeMultiplier=1.5, Color=Color3.fromRGB(65,151,232)},
+		Star = {Weight=14, IncomeMultiplier=2.5, Color=Color3.fromRGB(176,78,226)},
+		Elite = {Weight=6, IncomeMultiplier=4.5, Color=Color3.fromRGB(238,137,39)},
+		Legend = {Weight=1.7, IncomeMultiplier=9, Color=Color3.fromRGB(248,207,54)},
+		Icon = {Weight=0.3, IncomeMultiplier=18, Color=Color3.fromRGB(246,246,222)},
 	},
 })

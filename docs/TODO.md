@@ -1,18 +1,11 @@
-# TODO
+# Próximas etapas após teste real
 
-## Após validar o vertical slice
-
-- expandir para seis clubes;
-- adicionar Academy, National e World;
-- aumentar o catálogo para vinte e quatro jogadores;
-- criar álbum/collection UI;
-- liberar troca de lineup quando houver mais de seis jogadores;
-- implementar compra de chuteiras;
-- melhorar navegação e visual do Guardian;
-- adicionar efeitos de reveal por raridade;
-- simular e balancear a economia;
-- criar testes automatizados adicionais para módulos puros.
-
-## Fora do MVP
-
-Partidas 11x11, ligas reais, trading, guildas, pets, bosses e vários Places.
+- balancear economia e distâncias com telemetria dos primeiros 10 minutos;
+- adicionar ragdoll curto ao tackle;
+- melhorar navegação quando o graybox ganhar paredes;
+- permitir edição manual da Active Lineup;
+- vender jogador específico;
+- recompensas por páginas do álbum;
+- evolução visual dos clubes;
+- modelos, áudio e VFX originais;
+- configurar limite oficial de seis jogadores no Creator Dashboard.

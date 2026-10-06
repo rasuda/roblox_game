@@ -1,234 +1,84 @@
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ContextActionService = game:GetService("ContextActionService")
-local TweenService = game:GetService("TweenService")
+local Players=game:GetService("Players")
+local ReplicatedStorage=game:GetService("ReplicatedStorage")
+local ContextActionService=game:GetService("ContextActionService")
+local TweenService=game:GetService("TweenService")
+local player=Players.LocalPlayer local root=ReplicatedStorage:WaitForChild("TransferGame") local remotes=root:WaitForChild("Remotes")
+local definitions=require(root.Config.PlayerDefinitions) local zones=require(root.Config.ZoneConfig) local rarities=require(root.Config.RarityConfig)
+local state={Money=0,IncomePerSecond=0,Speed=16,OwnedCount=0,SlotCount=6,CarriedContract="",CurrentZone="Club",Training=false,Album={},SigningEndsAt=0,Boots="Basic"}
+local transferTime=0
 
-local player = Players.LocalPlayer
-local remotes = ReplicatedStorage:WaitForChild("TransferGame"):WaitForChild("Remotes")
-local state = {Money=0, IncomePerSecond=0, Speed=16, OwnedCount=0, CarriedContract="", Training=false, SigningEndsAt=0}
-local transferTime = 0
+local gui=Instance.new("ScreenGui") gui.Name="TransferRivalsUI" gui.ResetOnSpawn=false gui.Parent=player:WaitForChild("PlayerGui")
+local function corner(o,r) local c=Instance.new("UICorner") c.CornerRadius=UDim.new(0,r or 12) c.Parent=o end
+local function stroke(o,color,t) local s=Instance.new("UIStroke") s.Color=color or Color3.fromRGB(85,103,134) s.Thickness=t or 1 s.Transparency=.2 s.Parent=o end
+local function text(parent,name,pos,size,fontSize,align)
+	local l=Instance.new("TextLabel") l.Name=name l.Position=pos l.Size=size l.BackgroundTransparency=1 l.Font=Enum.Font.GothamBold l.TextColor3=Color3.new(1,1,1) l.TextSize=fontSize or 18 l.TextXAlignment=align or Enum.TextXAlignment.Left l.Text="" l.Parent=parent return l
+end
+local function panel(name,pos,size)
+	local f=Instance.new("Frame") f.Name=name f.Position=pos f.Size=size f.BackgroundColor3=Color3.fromRGB(12,18,28) f.BackgroundTransparency=.08 f.Parent=gui corner(f,14) stroke(f,Color3.fromRGB(75,207,133),2) return f
+end
+local function money(value) value=value or 0 if value>=1e12 then return string.format("$%.2fT",value/1e12) elseif value>=1e9 then return string.format("$%.2fB",value/1e9) elseif value>=1e6 then return string.format("$%.2fM",value/1e6) elseif value>=1e3 then return string.format("$%.1fK",value/1e3) end return "$"..math.floor(value) end
 
-local gui = Instance.new("ScreenGui")
-gui.Name = "TransferGameUI"
-gui.ResetOnSpawn = false
-gui.IgnoreGuiInset = false
-gui.Parent = player:WaitForChild("PlayerGui")
+local stats=panel("Stats",UDim2.fromScale(.06,.025),UDim2.new(.72,0,0,64))
+local moneyLabel=text(stats,"Money",UDim2.fromScale(.03,0),UDim2.fromScale(.3,1),18)
+local incomeLabel=text(stats,"Income",UDim2.fromScale(.34,0),UDim2.fromScale(.3,1),17,Enum.TextXAlignment.Center)
+local speedLabel=text(stats,"Speed",UDim2.fromScale(.66,0),UDim2.fromScale(.31,1),18,Enum.TextXAlignment.Right)
+local albumButton=Instance.new("TextButton") albumButton.AnchorPoint=Vector2.new(1,0) albumButton.Position=UDim2.fromScale(.97,.025) albumButton.Size=UDim2.fromOffset(118,64) albumButton.BackgroundColor3=Color3.fromRGB(39,91,164) albumButton.Font=Enum.Font.GothamBlack albumButton.Text="ALBUM" albumButton.TextColor3=Color3.new(1,1,1) albumButton.TextSize=17 albumButton.Parent=gui corner(albumButton,14)
 
-local function corner(parent, radius)
-	local object = Instance.new("UICorner")
-	object.CornerRadius = UDim.new(0, radius or 12)
-	object.Parent = parent
+local objective=panel("Objective",UDim2.fromScale(.08,.125),UDim2.new(.84,0,0,58)) objective.AnchorPoint=Vector2.new(0,0)
+local objectiveText=text(objective,"Text",UDim2.fromScale(.03,0),UDim2.fromScale(.94,1),17,Enum.TextXAlignment.Center) objectiveText.TextWrapped=true objectiveText.TextColor3=Color3.fromRGB(252,214,82)
+local market=panel("Market",UDim2.fromScale(.755,.225),UDim2.new(.22,0,0,62))
+local marketText=text(market,"Text",UDim2.fromScale(.04,0),UDim2.fromScale(.92,1),15,Enum.TextXAlignment.Center) marketText.TextWrapped=true marketText.TextColor3=Color3.fromRGB(108,202,255)
+local zonePanel=panel("Zone",UDim2.fromScale(.025,.225),UDim2.new(.29,0,0,62))
+local zoneText=text(zonePanel,"Text",UDim2.fromScale(.04,0),UDim2.fromScale(.92,1),15,Enum.TextXAlignment.Center) zoneText.TextWrapped=true
+
+local training=panel("Training",UDim2.fromScale(.025,.48),UDim2.new(.27,0,0,56)) training.Visible=false training.BackgroundColor3=Color3.fromRGB(180,112,31)
+local trainingText=text(training,"Text",UDim2.fromScale(.04,0),UDim2.fromScale(.92,1),16,Enum.TextXAlignment.Center) trainingText.Text="TRAINING SPEED"
+local tackle=Instance.new("TextButton") tackle.Name="SlideTackle" tackle.AnchorPoint=Vector2.new(1,1) tackle.Position=UDim2.fromScale(.97,.95) tackle.Size=UDim2.fromOffset(126,126) tackle.BackgroundColor3=Color3.fromRGB(225,61,62) tackle.Font=Enum.Font.GothamBlack tackle.Text="SLIDE\nTACKLE" tackle.TextColor3=Color3.new(1,1,1) tackle.TextSize=18 tackle.Parent=gui corner(tackle,63) stroke(tackle,Color3.fromRGB(255,196,70),3)
+
+local toast=panel("Toast",UDim2.fromScale(.15,.76),UDim2.new(.7,0,0,58)) toast.Visible=false
+local toastText=text(toast,"Text",UDim2.fromScale(.03,0),UDim2.fromScale(.94,1),17,Enum.TextXAlignment.Center) toastText.TextWrapped=true
+
+local modal=panel("Reveal",UDim2.fromScale(.14,.22),UDim2.new(.72,0,.58,0)) modal.Visible=false stroke(modal,Color3.fromRGB(244,194,51),4)
+local revealTitle=text(modal,"Title",UDim2.fromScale(.06,.06),UDim2.fromScale(.88,.22),28,Enum.TextXAlignment.Center) revealTitle.TextColor3=Color3.fromRGB(255,212,62)
+local revealBody=text(modal,"Body",UDim2.fromScale(.08,.28),UDim2.fromScale(.84,.48),21,Enum.TextXAlignment.Center) revealBody.TextWrapped=true
+local close=Instance.new("TextButton") close.AnchorPoint=Vector2.new(.5,1) close.Position=UDim2.fromScale(.5,.94) close.Size=UDim2.new(.55,0,0,50) close.BackgroundColor3=Color3.fromRGB(49,180,103) close.Font=Enum.Font.GothamBlack close.Text="CONTINUE" close.TextColor3=Color3.new(1,1,1) close.TextSize=18 close.Parent=modal corner(close,12)
+
+local album=panel("AlbumPanel",UDim2.fromScale(.08,.12),UDim2.new(.84,0,.76,0)) album.Visible=false
+local albumTitle=text(album,"Title",UDim2.fromScale(.04,.02),UDim2.fromScale(.8,.1),24) albumTitle.Text="PLAYER ALBUM"
+local albumClose=Instance.new("TextButton") albumClose.Position=UDim2.fromScale(.86,.025) albumClose.Size=UDim2.fromScale(.1,.09) albumClose.BackgroundColor3=Color3.fromRGB(202,61,61) albumClose.Text="X" albumClose.TextColor3=Color3.new(1,1,1) albumClose.Font=Enum.Font.GothamBlack albumClose.TextSize=20 albumClose.Parent=album corner(albumClose,10)
+local scroll=Instance.new("ScrollingFrame") scroll.Position=UDim2.fromScale(.04,.14) scroll.Size=UDim2.fromScale(.92,.70) scroll.BackgroundTransparency=1 scroll.ScrollBarThickness=6 scroll.AutomaticCanvasSize=Enum.AutomaticSize.Y scroll.CanvasSize=UDim2.new() scroll.Parent=album
+local grid=Instance.new("UIGridLayout") grid.CellSize=UDim2.new(.48,0,0,72) grid.CellPadding=UDim2.new(.025,0,0,8) grid.Parent=scroll
+local sell=Instance.new("TextButton") sell.AnchorPoint=Vector2.new(.5,1) sell.Position=UDim2.fromScale(.5,.96) sell.Size=UDim2.new(.6,0,0,48) sell.BackgroundColor3=Color3.fromRGB(183,74,55) sell.Font=Enum.Font.GothamBlack sell.Text="RELEASE WEAKEST PLAYER" sell.TextColor3=Color3.new(1,1,1) sell.TextSize=16 sell.Parent=album corner(sell,10)
+
+local albumRows={}
+local ordered={} for id,d in pairs(definitions) do table.insert(ordered,{Id=id,Definition=d}) end table.sort(ordered,function(a,b) local za=zones[a.Definition.Zone].Order local zb=zones[b.Definition.Zone].Order return za==zb and a.Definition.Name<b.Definition.Name or za<zb end)
+for _,entry in ipairs(ordered) do local d=entry.Definition local row=Instance.new("TextLabel") row.BackgroundColor3=Color3.fromRGB(25,32,45) row.Font=Enum.Font.GothamBold row.TextSize=14 row.TextWrapped=true row.TextColor3=Color3.fromRGB(135,145,160) row.Text="?\n"..zones[d.Zone].DisplayName row.Parent=scroll corner(row,9) albumRows[entry.Id]=row end
+
+local function refreshAlbum()
+	local total=0 for id,row in pairs(albumRows) do local d=definitions[id] local acquired=state.Album and state.Album[id] if acquired then total+=1 row.Text=d.Name.."\n"..d.Position.." • "..d.Rarity row.TextColor3=rarities.Definitions[d.Rarity].Color else row.Text="?\n"..zones[d.Zone].DisplayName row.TextColor3=Color3.fromRGB(135,145,160) end end
+	albumTitle.Text="PLAYER ALBUM  "..total.."/24"
 end
 
-local function stroke(parent, color, thickness)
-	local object = Instance.new("UIStroke")
-	object.Color = color or Color3.fromRGB(87, 102, 129)
-	object.Thickness = thickness or 1
-	object.Transparency = 0.25
-	object.Parent = parent
+local function nextZone()
+	for _,id in ipairs({"Academy","National","World"}) do if (state.Speed or 16)<zones[id].RequiredSpeed then return zones[id] end end
 end
-
-local function label(parent, name, position, size, textSize, alignment)
-	local object = Instance.new("TextLabel")
-	object.Name = name
-	object.Position = position
-	object.Size = size
-	object.BackgroundTransparency = 1
-	object.Font = Enum.Font.GothamBold
-	object.TextColor3 = Color3.new(1,1,1)
-	object.TextSize = textSize or 18
-	object.TextXAlignment = alignment or Enum.TextXAlignment.Left
-	object.Text = ""
-	object.Parent = parent
-	return object
-end
-
-local top = Instance.new("Frame")
-top.Name = "Stats"
-top.AnchorPoint = Vector2.new(0.5, 0)
-top.Position = UDim2.fromScale(0.5, 0.025)
-top.Size = UDim2.new(0.86, 0, 0, 66)
-top.BackgroundColor3 = Color3.fromRGB(15, 21, 31)
-top.BackgroundTransparency = 0.08
-top.Parent = gui
-corner(top, 16)
-stroke(top, Color3.fromRGB(95, 218, 147), 2)
-
-local money = label(top, "Money", UDim2.fromScale(0.035,0), UDim2.fromScale(0.3,1), 19)
-local income = label(top, "Income", UDim2.fromScale(0.35,0), UDim2.fromScale(0.3,1), 18, Enum.TextXAlignment.Center)
-local speed = label(top, "Speed", UDim2.fromScale(0.66,0), UDim2.fromScale(0.3,1), 19, Enum.TextXAlignment.Right)
-
-local objective = Instance.new("TextLabel")
-objective.Name = "Objective"
-objective.AnchorPoint = Vector2.new(0.5,0)
-objective.Position = UDim2.fromScale(0.5,0.12)
-objective.Size = UDim2.new(0.84,0,0,58)
-objective.BackgroundColor3 = Color3.fromRGB(16,23,35)
-objective.BackgroundTransparency = 0.12
-objective.Font = Enum.Font.GothamBold
-objective.TextColor3 = Color3.fromRGB(250, 216, 96)
-objective.TextSize = 18
-objective.TextWrapped = true
-objective.Parent = gui
-corner(objective,14)
-
-local market = Instance.new("TextLabel")
-market.Name = "MarketTimer"
-market.AnchorPoint = Vector2.new(1,0)
-market.Position = UDim2.new(0.98,0,0.22,0)
-market.Size = UDim2.fromOffset(190,55)
-market.BackgroundColor3 = Color3.fromRGB(16,23,35)
-market.BackgroundTransparency = 0.12
-market.Font = Enum.Font.GothamBold
-market.TextColor3 = Color3.fromRGB(120,205,255)
-market.TextSize = 16
-market.TextWrapped = true
-market.Parent = gui
-corner(market,12)
-
-local training = Instance.new("TextLabel")
-training.Name = "Training"
-training.AnchorPoint = Vector2.new(0,0.5)
-training.Position = UDim2.fromScale(0.025,0.52)
-training.Size = UDim2.fromOffset(190,54)
-training.BackgroundColor3 = Color3.fromRGB(201,132,37)
-training.BackgroundTransparency = 0.08
-training.Font = Enum.Font.GothamBlack
-training.Text = "TREINANDO SPEED"
-training.TextColor3 = Color3.new(1,1,1)
-training.TextSize = 16
-training.Visible = false
-training.Parent = gui
-corner(training,12)
-
-local slide = Instance.new("TextButton")
-slide.Name = "SlideTackle"
-slide.AnchorPoint = Vector2.new(1,1)
-slide.Position = UDim2.new(0.97,0,0.95,0)
-slide.Size = UDim2.fromOffset(126,126)
-slide.BackgroundColor3 = Color3.fromRGB(231,70,68)
-slide.BackgroundTransparency = 0.06
-slide.Font = Enum.Font.GothamBlack
-slide.Text = "SLIDE\nTACKLE"
-slide.TextColor3 = Color3.new(1,1,1)
-slide.TextSize = 19
-slide.Parent = gui
-corner(slide,63)
-stroke(slide, Color3.fromRGB(255,190,88), 3)
-
-local toast = Instance.new("TextLabel")
-toast.Name = "Toast"
-toast.AnchorPoint = Vector2.new(0.5,1)
-toast.Position = UDim2.fromScale(0.5,0.82)
-toast.Size = UDim2.new(0.72,0,0,58)
-toast.BackgroundColor3 = Color3.fromRGB(18,24,34)
-toast.BackgroundTransparency = 0.06
-toast.Font = Enum.Font.GothamBold
-toast.TextColor3 = Color3.new(1,1,1)
-toast.TextSize = 17
-toast.TextWrapped = true
-toast.Visible = false
-toast.Parent = gui
-corner(toast,14)
-
-local reveal = Instance.new("Frame")
-reveal.Name = "Reveal"
-reveal.AnchorPoint = Vector2.new(0.5,0.5)
-reveal.Position = UDim2.fromScale(0.5,0.5)
-reveal.Size = UDim2.new(0.72,0,0.58,0)
-reveal.BackgroundColor3 = Color3.fromRGB(12,17,27)
-reveal.Visible = false
-reveal.Parent = gui
-corner(reveal,22)
-stroke(reveal, Color3.fromRGB(239,195,64), 4)
-local revealTitle = label(reveal,"Title",UDim2.fromScale(0.08,0.08),UDim2.fromScale(0.84,0.2),28,Enum.TextXAlignment.Center)
-revealTitle.TextColor3 = Color3.fromRGB(255,213,76)
-local revealBody = label(reveal,"Body",UDim2.fromScale(0.08,0.28),UDim2.fromScale(0.84,0.5),22,Enum.TextXAlignment.Center)
-revealBody.TextWrapped = true
-local close = Instance.new("TextButton")
-close.AnchorPoint = Vector2.new(0.5,1)
-close.Position = UDim2.fromScale(0.5,0.93)
-close.Size = UDim2.new(0.55,0,0,52)
-close.BackgroundColor3 = Color3.fromRGB(55,177,105)
-close.Font = Enum.Font.GothamBold
-close.Text = "CONTINUAR"
-close.TextColor3 = Color3.new(1,1,1)
-close.TextSize = 18
-close.Parent = reveal
-corner(close,12)
-close.Activated:Connect(function() reveal.Visible = false end)
-
-local function formatMoney(value)
-	if value >= 1000000 then return string.format("$%.1fM", value/1000000) end
-	if value >= 1000 then return string.format("$%.1fK", value/1000) end
-	return string.format("$%d", math.floor(value or 0))
-end
-
 local function update()
-	money.Text = "MONEY  " .. formatMoney(state.Money or 0)
-	income.Text = "+" .. formatMoney(state.IncomePerSecond or 0) .. "/s"
-	speed.Text = string.format("SPEED  %.1f", state.Speed or 16)
-	training.Visible = state.Training == true
-	if state.CarriedContract and state.CarriedContract ~= "" then
-		objective.Text = "⚠ LEVE O CONTRATO DE " .. string.upper(state.CarriedContract) .. " AO SEU CLUBE"
-	elseif (state.SigningEndsAt or 0) > os.time() then
-		objective.Text = string.format("ASSINANDO %s… %ds", string.upper(state.SigningName or "JOGADOR"), math.max(0,state.SigningEndsAt-os.time()))
-	elseif (state.OwnedCount or 0) == 0 then
-		objective.Text = "OBJETIVO: VÁ À VÁRZEA, PEGUE UM CONTRATO E FUJA DO GUARDIAN"
-	else
-		objective.Text = "TREINE SPEED OU BUSQUE OUTRO CONTRATO"
-	end
-	market.Text = string.format("TRANSFER WINDOW\n%02d:%02d", math.floor(transferTime/60), transferTime%60)
+	moneyLabel.Text="MONEY  "..money(state.Money) incomeLabel.Text="+"..money(state.IncomePerSecond).."/s" speedLabel.Text=string.format("SPEED  %.1f",state.Speed or 16)
+	training.Visible=state.Training==true local zone=zones[state.CurrentZone] zoneText.Text=zone and zone.DisplayName or "YOUR CLUB"
+	local next=nextZone() if next then zoneText.Text..="\nNEXT: "..next.DisplayName.."  "..math.floor(state.Speed).."/"..next.RequiredSpeed else zoneText.Text..="\nALL ZONES UNLOCKED" end
+	if state.CarriedContract and state.CarriedContract~="" then objectiveText.Text="RUN TO YOUR CLUB WITH "..string.upper(state.CarriedContract).."!"
+	elseif (state.SigningEndsAt or 0)>os.time() then objectiveText.Text=string.format("SIGNING %s… %ds",string.upper(state.SigningName or "PLAYER"),math.max(0,state.SigningEndsAt-os.time()))
+	elseif (state.OwnedCount or 0)==0 then objectiveText.Text="STEAL YOUR FIRST CONTRACT IN STREET FOOTBALL"
+	else objectiveText.Text="TRAIN, UPGRADE AND STEAL BETTER PLAYERS" end
+	marketText.Text=string.format("TRANSFER WINDOW\n%02d:%02d",math.floor(transferTime/60),transferTime%60) refreshAlbum()
 end
 
-local toastId = 0
-local function notify(message, kind)
-	toastId += 1
-	local id = toastId
-	toast.Text = message
-	toast.TextColor3 = kind == "Success" and Color3.fromRGB(111,255,165) or (kind == "Warning" and Color3.fromRGB(255,207,91) or (kind == "Rare" and Color3.fromRGB(224,132,255) or Color3.new(1,1,1)))
-	toast.Visible = true
-	toast.TextTransparency = 0
-	task.delay(3.2,function()
-		if toastId == id then
-			TweenService:Create(toast,TweenInfo.new(0.3),{TextTransparency=1}):Play()
-			task.wait(0.32)
-			if toastId == id then toast.Visible = false end
-		end
-	end)
-end
-
-local lastSlide = 0
-local function useSlide()
-	if os.clock() - lastSlide < 4 then return end
-	lastSlide = os.clock()
-	remotes.SlideTackle:FireServer()
-	slide.Text = "COOLDOWN"
-	task.delay(4,function() slide.Text = "SLIDE\nTACKLE" end)
-end
-
-slide.Activated:Connect(useSlide)
-ContextActionService:BindAction("TransferSlideTackle",function(_,inputState)
-	if inputState == Enum.UserInputState.Begin then useSlide() end
-	return Enum.ContextActionResult.Sink
-end,false,Enum.KeyCode.Q)
-
-remotes.StateUpdate.OnClientEvent:Connect(function(snapshot)
-	for key,value in pairs(snapshot) do state[key]=value end
-	update()
-end)
-remotes.TransferWindow.OnClientEvent:Connect(function(seconds) transferTime=seconds update() end)
-remotes.Notification.OnClientEvent:Connect(notify)
-remotes.Reveal.OnClientEvent:Connect(function(card)
-	revealTitle.Text = card.Name .. " • " .. card.Rating
-	revealBody.Text = string.format("%s\n%s • %s\n+%s por segundo",card.Position,card.Rarity,card.Edition,formatMoney(card.Income))
-	reveal.Visible = true
-end)
-
-task.spawn(function()
-	while task.wait(1) do
-		if transferTime > 0 then transferTime -= 1 end
-		update()
-	end
-end)
-update()
+local toastId=0 local function notify(message,kind) toastId+=1 local id=toastId toastText.Text=message toastText.TextColor3=kind=="Success" and Color3.fromRGB(107,255,162) or (kind=="Warning" and Color3.fromRGB(255,205,78) or (kind=="Rare" and Color3.fromRGB(219,117,255) or Color3.new(1,1,1))) toast.Visible=true toastText.TextTransparency=0 task.delay(3.2,function() if toastId==id then TweenService:Create(toastText,TweenInfo.new(.25),{TextTransparency=1}):Play() task.wait(.28) if toastId==id then toast.Visible=false end end end) end
+local lastSlide=0 local function slide() if os.clock()-lastSlide<4 then return end lastSlide=os.clock() remotes.SlideTackle:FireServer() tackle.Text="COOLDOWN" task.delay(4,function() tackle.Text="SLIDE\nTACKLE" end) end
+tackle.Activated:Connect(slide) ContextActionService:BindAction("SlideTackle",function(_,input) if input==Enum.UserInputState.Begin then slide() end return Enum.ContextActionResult.Sink end,false,Enum.KeyCode.Q)
+albumButton.Activated:Connect(function() album.Visible=not album.Visible end) albumClose.Activated:Connect(function() album.Visible=false end) close.Activated:Connect(function() modal.Visible=false end)
+sell.Activated:Connect(function() remotes.SellWeakest:FireServer() end)
+remotes.StateUpdate.OnClientEvent:Connect(function(snapshot) for k,v in pairs(snapshot) do state[k]=v end update() end)
+remotes.TransferWindow.OnClientEvent:Connect(function(seconds) transferTime=seconds update() end) remotes.Notification.OnClientEvent:Connect(notify)
+remotes.Reveal.OnClientEvent:Connect(function(card) revealTitle.Text=card.Name.."  "..card.Rating revealBody.Text=string.format("%s • %s\n%s\n%s EDITION\n\n+%s/s",card.Position,card.Country,card.Rarity,string.upper(card.Edition),money(card.Income)) modal.Visible=true end)
+task.spawn(function() while task.wait(1) do if transferTime>0 then transferTime-=1 end update() end end) update()

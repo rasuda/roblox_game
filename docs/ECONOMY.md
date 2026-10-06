@@ -1,15 +1,7 @@
-# Economy
+# Economy v2
 
-## Renda
+`Income = BaseIncome × RarityMultiplier × RatingMultiplier × EditionMultiplier × ClubCashMultiplier`
 
-`FinalIncome = BaseIncome × RarityMultiplier × RatingMultiplier × EditionMultiplier`
+Street começa em unidades por segundo; Academy em dezenas; National em centenas/milhares; World Elite em dezenas de milhares. Rating usa duas amostras para favorecer valores médios, com chance rara adicional de jackpot 95+.
 
-Somente jogadores no `ActiveLineup` geram renda. O servidor calcula a soma uma vez por usuário a cada tick; não existe loop por card.
-
-## Primeiros minutos
-
-- Léo Veloz: contrato simples, assinatura curta, aproximadamente `$3/s`.
-- primeiro upgrade de treino: `$25`;
-- Mateo Cruz e Davi Rocha aceleram a renda e aumentam o risco de transporte.
-
-Os números ficam centralizados em `EconomyConfig`, `TrainingConfig` e `PlayerDefinitions`.
+Custos ficam centralizados nos arquivos de configuração.

@@ -1,137 +1,41 @@
-local RunService = game:GetService("RunService")
-
-local GuardianService = {}
-GuardianService.Context = nil
-GuardianService.Model = nil
-GuardianService.Home = nil
-GuardianService.Targets = {}
-GuardianService.State = "IDLE"
-GuardianService.AlertUntil = 0
-
-local function makePart(parent, name, size, cframe, color)
-	local object = Instance.new("Part")
-	object.Name = name
-	object.Size = size
-	object.CFrame = cframe
-	object.Color = color
-	object.Material = Enum.Material.SmoothPlastic
-	object.Anchored = true
-	object.CanCollide = false
-	object.Parent = parent
-	return object
+local RunService=game:GetService("RunService")
+local Service={Context=nil,Guardians={}}
+local function part(parent,name,size,cframe,color)
+	local p=Instance.new("Part") p.Name=name p.Size=size p.CFrame=cframe p.Color=color p.Material=Enum.Material.SmoothPlastic p.Anchored=true p.CanCollide=false p.Parent=parent return p
 end
-
-function GuardianService:SetState(state)
-	self.State = state
-	if self.Model then self.Model:SetAttribute("State", state) end
+local function label(root,text)
+	local gui=Instance.new("BillboardGui") gui.Size=UDim2.fromOffset(210,58) gui.StudsOffset=Vector3.new(0,7,0) gui.AlwaysOnTop=true gui.Parent=root
+	local l=Instance.new("TextLabel") l.Size=UDim2.fromScale(1,1) l.BackgroundColor3=Color3.fromRGB(15,20,29) l.BackgroundTransparency=.12 l.TextColor3=Color3.fromRGB(255,198,55) l.Font=Enum.Font.GothamBlack l.TextScaled=true l.Text=text l.Parent=gui
 end
-
-function GuardianService:Build()
-	local zone = self.Context.Config.Zones.Street
-	self.Home = zone.GuardianSpawn
-	local model = Instance.new("Model")
-	model.Name = "StreetGuardian"
-	model.Parent = self.Context.Services.Club.World.Guardians
-	local root = makePart(model, "Root", Vector3.new(4, 6, 3), CFrame.new(self.Home), Color3.fromRGB(38, 43, 55))
-	makePart(model, "Head", Vector3.new(3.4, 3.4, 3.4), CFrame.new(self.Home + Vector3.new(0, 4.7, 0)), Color3.fromRGB(204, 158, 117))
-	makePart(model, "Vest", Vector3.new(4.4, 2.2, 3.3), CFrame.new(self.Home + Vector3.new(0, 1, 0)), Color3.fromRGB(245, 176, 45))
-	model.PrimaryPart = root
-	local gui = Instance.new("BillboardGui")
-	gui.Size = UDim2.fromOffset(190, 52)
-	gui.StudsOffset = Vector3.new(0, 7.4, 0)
-	gui.AlwaysOnTop = true
-	gui.Parent = root
-	local label = Instance.new("TextLabel")
-	label.Size = UDim2.fromScale(1,1)
-	label.BackgroundColor3 = Color3.fromRGB(18,22,30)
-	label.BackgroundTransparency = 0.15
-	label.Text = "GUARDIAN"
-	label.TextColor3 = Color3.fromRGB(255,198,65)
-	label.Font = Enum.Font.GothamBlack
-	label.TextScaled = true
-	label.Parent = gui
-	self.Model = model
-	self:SetState(self.Context.Constants.GuardianState.IDLE)
+function Service:Build(zoneId,zone)
+	local model=Instance.new("Model") model.Name=zoneId.."Guardian" model:SetAttribute("State","IDLE") model.Parent=self.Context.Services.Club.World.Guardians
+	local root=part(model,"Root",Vector3.new(4.5,6,3.2),CFrame.new(zone.GuardianSpawn),zone.Color)
+	part(model,"Head",Vector3.new(3.5,3.5,3.5),CFrame.new(zone.GuardianSpawn+Vector3.new(0,4.8,0)),Color3.fromRGB(201,154,115))
+	part(model,"Vest",Vector3.new(4.8,2.2,3.5),CFrame.new(zone.GuardianSpawn+Vector3.new(0,1.1,0)),Color3.fromRGB(244,172,42)) model.PrimaryPart=root label(root,zone.GuardianName)
+	self.Guardians[zoneId]={ZoneId=zoneId,Config=zone,Model=model,Home=zone.GuardianSpawn,Targets={},AlertUntil=0,State="IDLE"}
 end
-
-function GuardianService:AddTarget(player)
-	self.Targets[player] = true
-	self.AlertUntil = os.clock() + 0.55
-	self:SetState(self.Context.Constants.GuardianState.ALERT)
+function Service:SetState(g,state) g.State=state g.Model:SetAttribute("State",state) end
+function Service:AddTarget(zoneId,player) local g=self.Guardians[zoneId] if g then g.Targets[player]=true g.AlertUntil=os.clock()+.45 self:SetState(g,"ALERT") end end
+function Service:RemoveTarget(zoneId,player) local g=self.Guardians[zoneId] if g then g.Targets[player]=nil end end
+function Service:Nearest(g,position)
+	local best,distance for player in pairs(g.Targets) do local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart") local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
+		if not player.Parent or not root or not humanoid or humanoid.Health<=0 or self.Context.Services.Club:IsInAnySafeZone(root.Position) then g.Targets[player]=nil
+		else local d=(root.Position-position).Magnitude if not distance or d<distance then best,distance=player,d end end end return best,distance
 end
-
-function GuardianService:RemoveTarget(player)
-	self.Targets[player] = nil
+function Service:Move(g,target,speed,dt)
+	local current=g.Model:GetPivot().Position local flat=Vector3.new(target.X,g.Home.Y,target.Z) local delta=flat-current if delta.Magnitude<.05 then return true end
+	local amount=math.min(delta.Magnitude,speed*dt) local nextPosition=current+delta.Unit*amount g.Model:PivotTo(CFrame.lookAt(nextPosition,flat)) return delta.Magnitude<=amount+.1
 end
-
-function GuardianService:GetNearestTarget(position)
-	local nearest, nearestDistance
-	for player in pairs(self.Targets) do
-		local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-		local humanoid = player.Character and player.Character:FindFirstChildOfClass("Humanoid")
-		if not player.Parent or not root or not humanoid or humanoid.Health <= 0 or self.Context.Services.Club:IsInOwnSafeZone(player, root.Position) then
-			self.Targets[player] = nil
-		else
-			local distance = (root.Position - position).Magnitude
-			if not nearestDistance or distance < nearestDistance then nearest, nearestDistance = player, distance end
-		end
-	end
-	return nearest, nearestDistance
+function Service:TickGuardian(g,dt)
+	local current=g.Model:GetPivot().Position local target,distance=self:Nearest(g,current)
+	if target then if os.clock()<g.AlertUntil then return end self:SetState(g,"CHASE") local root=target.Character and target.Character:FindFirstChild("HumanoidRootPart") if not root then return end
+		if distance and distance<=self.Context.Config.Game.GuardianHitRadius then self:SetState(g,"ATTACK") self.Context.Services.Contracts:Drop(target,g.Config.GuardianName)
+			local away=root.Position-current if away.Magnitude<.05 then away=root.CFrame.LookVector else away=away.Unit end root.AssemblyLinearVelocity+=away*36+Vector3.new(0,17,0) g.Targets[target]=nil return end
+		self:Move(g,root.Position,g.Config.GuardianSpeed,dt)
+	elseif (current-g.Home).Magnitude>1 then self:SetState(g,"RETURN") if self:Move(g,g.Home,g.Config.GuardianSpeed*.9,dt) then self:SetState(g,"IDLE") end else self:SetState(g,"IDLE") end
 end
-
-function GuardianService:MoveToward(targetPosition, speed, deltaTime)
-	local current = self.Model:GetPivot().Position
-	local flatTarget = Vector3.new(targetPosition.X, self.Home.Y, targetPosition.Z)
-	local offset = flatTarget - current
-	if offset.Magnitude < 0.05 then return true end
-	local movement = math.min(offset.Magnitude, speed * deltaTime)
-	local nextPosition = current + offset.Unit * movement
-	self.Model:PivotTo(CFrame.lookAt(nextPosition, flatTarget))
-	return offset.Magnitude <= movement + 0.1
+function Service:Init(context)
+	self.Context=context for id,zone in pairs(context.Config.Zones) do self:Build(id,zone) end
+	local acc=0 RunService.Heartbeat:Connect(function(dt) acc+=dt if acc>=context.Config.Game.GuardianTickSeconds then for _,g in pairs(self.Guardians) do self:TickGuardian(g,acc) end acc=0 end end)
 end
-
-function GuardianService:Tick(deltaTime)
-	if not self.Model then return end
-	local current = self.Model:GetPivot().Position
-	local target, distance = self:GetNearestTarget(current)
-	if target then
-		if os.clock() < self.AlertUntil then return end
-		self:SetState(self.Context.Constants.GuardianState.CHASE)
-		local root = target.Character and target.Character:FindFirstChild("HumanoidRootPart")
-		if not root then return end
-		if distance and distance <= self.Context.Config.Game.GuardianHitRadius then
-			self:SetState(self.Context.Constants.GuardianState.ATTACK)
-			self.Context.Services.Contracts:Drop(target, "Guardian")
-			local away = root.Position - current
-			if away.Magnitude < 0.05 then away = root.CFrame.LookVector else away = away.Unit end
-			root.AssemblyLinearVelocity += away * 34 + Vector3.new(0, 18, 0)
-			self:RemoveTarget(target)
-			return
-		end
-		self:MoveToward(root.Position, self.Context.Config.Zones.Street.GuardianSpeed, deltaTime)
-	else
-		if (current - self.Home).Magnitude > 1 then
-			self:SetState(self.Context.Constants.GuardianState.RETURN)
-			if self:MoveToward(self.Home, self.Context.Config.Zones.Street.GuardianSpeed * 0.85, deltaTime) then
-				self:SetState(self.Context.Constants.GuardianState.IDLE)
-			end
-		else
-			self:SetState(self.Context.Constants.GuardianState.IDLE)
-		end
-	end
-end
-
-function GuardianService:Init(context)
-	self.Context = context
-	self:Build()
-	local accumulator = 0
-	RunService.Heartbeat:Connect(function(deltaTime)
-		accumulator += deltaTime
-		if accumulator >= context.Config.Game.GuardianTickSeconds then
-			self:Tick(accumulator)
-			accumulator = 0
-		end
-	end)
-end
-
-return GuardianService
+return Service

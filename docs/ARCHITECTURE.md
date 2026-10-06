@@ -1,23 +1,15 @@
-# Architecture
+# Architecture v2
 
-## Autoridade
+O servidor decide dinheiro, Speed, acesso às zonas, contratos, ratings, Editions, tackle, assinatura, renda e upgrades. O cliente envia somente intenção de tackle/venda e renderiza UI.
 
-O servidor decide dinheiro, Speed, contratos, distância, Safe Zone, Signing, raridade, rating, renda e PvP. O cliente envia somente a intenção de usar Slide Tackle e renderiza UI.
+- `Config`: conteúdo e balanceamento data-driven.
+- `PlayerDataService`: schema, DataStore, autosave e snapshots.
+- `ClubService`: graybox, seis bases, quatro zonas e showroom.
+- `ContractService`: máquina de estados, spawn, carry, drop, signing e reveal.
+- `GuardianService`: quatro máquinas de estado em um scheduler central.
+- `EconomyService`: renda agregada e venda.
+- `TrainingService`: Speed, chuteiras, slots e upgrades.
+- `PvPService`: slide tackle server-authoritative.
+- `TransferWindowService`: relógio e refresh compartilhado.
 
-## Camadas
-
-- `game/replicated/Config`: valores e conteúdo data-driven.
-- `game/replicated/Shared`: estados e nomes compartilhados.
-- `game/server/Services`: serviços com responsabilidade única.
-- `game/server/Bootstrap.server.lua`: composição e ciclo de vida.
-- `game/client/Main.client.lua`: HUD e ações mobile/PC.
-
-## Estado de contrato
-
-`AVAILABLE → CARRIED → DROPPED → CARRIED → DEPOSITED → SIGNING → SIGNED`
-
-Transições inválidas são rejeitadas no `ContractService`.
-
-## Persistência
-
-Schema versionado, `UpdateAsync`, autosave, save on leave e `BindToClose`. Em Studio sem acesso à API, o jogo usa sessão temporária e mantém o loop jogável.
+Estado: `AVAILABLE → CARRIED → DROPPED → CARRIED → DEPOSITED → SIGNING → SIGNED`.

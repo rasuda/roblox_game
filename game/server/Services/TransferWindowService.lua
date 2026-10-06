@@ -5,11 +5,12 @@ TransferWindowService.TimeLeft = 0
 function TransferWindowService:Refresh()
 	self.Context.Services.Contracts:ResetMarket()
 	self.TimeLeft = self.Context.Config.Game.TransferWindowSeconds
-	self.Context.Remotes.Notification:FireAllClients("A janela de transferências foi renovada!", "Info")
+	self.Context.Remotes.Notification:FireAllClients("NEW PLAYERS AVAILABLE!", "Info")
 	for _, record in pairs(self.Context.Services.Contracts.Contracts) do
 		local definition = self.Context.Config.Players[record.DefinitionId]
-		if definition and definition.Rarity == "Star" then
-			self.Context.Remotes.Notification:FireAllClients("Um jogador STAR apareceu na Várzea Street!", "Rare")
+		if definition and (definition.Rarity == "Legend" or definition.Rarity == "Icon") then
+			local zone=self.Context.Config.Zones[definition.Zone]
+			self.Context.Remotes.Notification:FireAllClients("A "..string.upper(definition.Rarity).." HAS APPEARED IN "..zone.DisplayName.."!", "Rare")
 			break
 		end
 	end

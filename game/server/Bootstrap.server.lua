@@ -25,6 +25,8 @@ local context = {
 		Economy = require(configFolder.EconomyConfig),
 		Training = require(configFolder.TrainingConfig),
 		Equipment = require(configFolder.EquipmentConfig),
+		Editions = require(configFolder.EditionConfig),
+		Upgrades = require(configFolder.UpgradeConfig),
 	},
 	Remotes = remoteTable,
 	Services = {},
@@ -49,4 +51,4 @@ context.Services.Guardian:Init(context)
 context.Services.PvP:Init(context)
 context.Services.TransferWindow:Init(context)
 
-print("[Football Transfer Heist] Vertical slice initialized")
+print("[Football Transfer Rivals] MVP v2 initialized")
