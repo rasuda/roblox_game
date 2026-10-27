@@ -2,6 +2,7 @@ local Lighting=game:GetService("Lighting")
 local Workspace=game:GetService("Workspace")
 
 local MAP_NAME="FootballTerrain"
+local HORIZONTAL_SCALE=0.5
 local HUB_CENTER=Vector3.new(0,0,300)
 local HUB_SIZE=Vector3.new(650,24,500)
 local LANE_WIDTH=300
@@ -125,6 +126,18 @@ part(map,"FinishFloor",Vector3.new(440,.5,320),CFrame.new(0,.25,finishZ),Color3.
 border(map,"Finish",Vector3.new(0,0,finishZ),Vector3.new(460,0,340),Color3.fromRGB(146,92,55),Color3.fromRGB(51,255,67))
 endWall(map,"FinishNorth",finishZ+170-6,460,Color3.fromRGB(146,92,55),Color3.fromRGB(51,255,67),LANE_WIDTH)
 endWall(map,"FinishSouth",finishZ-170+6,460,Color3.fromRGB(146,92,55),Color3.fromRGB(51,255,67))
+
+-- Apply once after construction so decorations derived from other parts are
+-- not scaled twice. Keep heights, materials, labels and the layout unchanged.
+for _,object in ipairs(map:GetDescendants()) do
+	if object:IsA("BasePart") then
+		local size=object.Size
+		local transform=object.CFrame
+		local position=transform.Position
+		object.Size=Vector3.new(size.X*HORIZONTAL_SCALE,size.Y,size.Z*HORIZONTAL_SCALE)
+		object.CFrame=CFrame.new(position.X*HORIZONTAL_SCALE,position.Y,position.Z*HORIZONTAL_SCALE)*transform.Rotation
+	end
+end
 
 Lighting.ClockTime=14 Lighting.Brightness=2.2 Lighting.Ambient=Color3.fromRGB(135,145,165) Lighting.OutdoorAmbient=Color3.fromRGB(160,170,185)
 Workspace.FallenPartsDestroyHeight=-150
