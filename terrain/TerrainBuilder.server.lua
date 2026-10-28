@@ -7,7 +7,7 @@ local HUB_CENTER=Vector3.new(0,0,300)
 local HUB_SIZE=Vector3.new(650,24,500)
 local LANE_WIDTH=300
 local SECTION_LENGTH=250
-local WALL_HEIGHT=54
+local WALL_HEIGHT=27
 
 local ZONES={
 	{Name="FOREST",Floor=Color3.fromRGB(105,219,55),Wall=Color3.fromRGB(144,92,54),Rail=Color3.fromRGB(61,255,70)},
@@ -66,12 +66,10 @@ local function plotBorder(parent,index,center,color)
 	part(parent,"Plot"..index.."B",Vector3.new(width,3,rail),CFrame.new(center+Vector3.new(0,y,depth/2)),color,Enum.Material.Neon,false)
 end
 
-local function arch(parent,zone,center)
-	local color=zone.Rail
-	part(parent,zone.Name.."ArchLeft",Vector3.new(12,32,12),CFrame.new(center+Vector3.new(-LANE_WIDTH/2+16,16,0)),color,Enum.Material.Neon,true)
-	part(parent,zone.Name.."ArchRight",Vector3.new(12,32,12),CFrame.new(center+Vector3.new(LANE_WIDTH/2-16,16,0)),color,Enum.Material.Neon,true)
-	local beam=part(parent,zone.Name.."ArchBeam",Vector3.new(LANE_WIDTH-20,10,12),CFrame.new(center+Vector3.new(0,31,0)),Color3.fromRGB(25,30,39),Enum.Material.Metal,true)
-	label(beam,zone.Name,zone.Rail)
+local function zoneLabel(parent,zone,center)
+	local anchor=part(parent,zone.Name.."LabelAnchor",Vector3.new(1,1,1),CFrame.new(center+Vector3.new(0,17,0)),zone.Rail,Enum.Material.SmoothPlastic,false,1)
+	anchor.CanTouch=false anchor.CanQuery=false
+	label(anchor,zone.Name,zone.Rail)
 end
 
 local function decorateZone(parent,zone,index,center)
@@ -120,7 +118,7 @@ for index,zone in ipairs(ZONES) do
 	part(map,zone.Name.."Island",Vector3.new(LANE_WIDTH,24,SECTION_LENGTH),CFrame.new(center+Vector3.new(0,-12,0)),Color3.fromRGB(126,78,46),Enum.Material.Sandstone,true)
 	part(map,zone.Name.."Floor",Vector3.new(LANE_WIDTH-22,.5,SECTION_LENGTH),CFrame.new(center+Vector3.new(0,.25,0)),zone.Floor,zone.Name=="ICE" and Enum.Material.Ice or (zone.Name=="PREHISTORIC" and Enum.Material.Sand or Enum.Material.SmoothPlastic),true)
 	border(map,zone.Name,center,Vector3.new(LANE_WIDTH,0,SECTION_LENGTH),zone.Wall,zone.Rail)
-	arch(map,zone,Vector3.new(0,0,center.Z+SECTION_LENGTH/2-8)) decorateZone(map,zone,index,center)
+	zoneLabel(map,zone,Vector3.new(0,0,center.Z+SECTION_LENGTH/2-8)) decorateZone(map,zone,index,center)
 end
 
 local finishZ=corridorStart-#ZONES*SECTION_LENGTH-180
