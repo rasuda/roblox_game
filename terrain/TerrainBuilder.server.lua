@@ -194,3 +194,4 @@ castle(6,4)
 Lighting.ClockTime=14 Lighting.Brightness=2.2 Lighting.Ambient=Color3.fromRGB(135,145,165) Lighting.OutdoorAmbient=Color3.fromRGB(160,170,185)
 Workspace.FallenPartsDestroyHeight=-150
 print("[Football Terrain] Reference graybox loaded")
+map:SetAttribute("Ready",true)
