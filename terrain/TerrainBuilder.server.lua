@@ -27,8 +27,8 @@ local function part(parent,name,size,cframe,color,material,collide,transparency)
 	return object
 end
 
-local function label(adornee,textValue,color,size)
-	local gui=Instance.new("BillboardGui") gui.Size=size or UDim2.fromOffset(280,70) gui.StudsOffset=Vector3.new(0,5,0) gui.AlwaysOnTop=true gui.Parent=adornee
+local function label(adornee,textValue,color)
+	local gui=Instance.new("BillboardGui") gui.Size=UDim2.fromOffset(100,24) gui.StudsOffset=Vector3.new(0,5,0) gui.AlwaysOnTop=false gui.MaxDistance=100 gui.Parent=adornee
 	local text=Instance.new("TextLabel") text.Size=UDim2.fromScale(1,1) text.BackgroundColor3=Color3.fromRGB(16,20,28) text.BackgroundTransparency=.1
 	text.Text=textValue text.TextColor3=color text.Font=Enum.Font.GothamBlack text.TextScaled=true text.Parent=gui
 	local corner=Instance.new("UICorner") corner.CornerRadius=UDim.new(0,10) corner.Parent=text return text
@@ -71,7 +71,7 @@ local function arch(parent,zone,center)
 	part(parent,zone.Name.."ArchLeft",Vector3.new(12,32,12),CFrame.new(center+Vector3.new(-LANE_WIDTH/2+16,16,0)),color,Enum.Material.Neon,true)
 	part(parent,zone.Name.."ArchRight",Vector3.new(12,32,12),CFrame.new(center+Vector3.new(LANE_WIDTH/2-16,16,0)),color,Enum.Material.Neon,true)
 	local beam=part(parent,zone.Name.."ArchBeam",Vector3.new(LANE_WIDTH-20,10,12),CFrame.new(center+Vector3.new(0,31,0)),Color3.fromRGB(25,30,39),Enum.Material.Metal,true)
-	label(beam,zone.Name,zone.Rail,UDim2.fromOffset(300,65))
+	label(beam,zone.Name,zone.Rail)
 end
 
 local function decorateZone(parent,zone,index,center)
@@ -107,7 +107,10 @@ endWall(map,"HubSouth",HUB_CENTER.Z-HUB_SIZE.Z/2+6,HUB_SIZE.X,Color3.fromRGB(151
 
 local plotPositions={Vector3.new(-205,0,385),Vector3.new(0,0,385),Vector3.new(205,0,385),Vector3.new(-205,0,215),Vector3.new(0,0,215),Vector3.new(205,0,215)}
 local plotColors={Color3.fromRGB(255,78,72),Color3.fromRGB(63,151,255),Color3.fromRGB(255,201,62),Color3.fromRGB(179,82,238),Color3.fromRGB(52,224,137),Color3.fromRGB(255,125,43)}
-for index,position in ipairs(plotPositions) do plotBorder(map,index,position,plotColors[index]) end
+for index,position in ipairs(plotPositions) do
+	-- Leave the central green lot open; the continuous hub grass remains.
+	if index~=5 then plotBorder(map,index,position,plotColors[index]) end
+end
 
 local spawn=Instance.new("SpawnLocation") spawn.Name="TerrainSpawn" spawn.Size=Vector3.new(14,1,14) spawn.Position=Vector3.new(0,1,500) spawn.Color=Color3.fromRGB(255,255,255) spawn.Material=Enum.Material.Neon spawn.Anchored=true spawn.Neutral=true spawn.Parent=map
 
