@@ -2,7 +2,7 @@ local Lighting=game:GetService("Lighting")
 local Workspace=game:GetService("Workspace")
 
 local MAP_NAME="FootballTerrain"
-local HORIZONTAL_SCALE=0.5
+local HORIZONTAL_SCALE=0.25
 local HUB_CENTER=Vector3.new(0,0,300)
 local HUB_SIZE=Vector3.new(650,24,500)
 local LANE_WIDTH=300
