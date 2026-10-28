@@ -121,12 +121,8 @@ for index,zone in ipairs(ZONES) do
 	zoneLabel(map,zone,Vector3.new(0,0,center.Z+SECTION_LENGTH/2-8)) decorateZone(map,zone,index,center)
 end
 
-local finishZ=corridorStart-#ZONES*SECTION_LENGTH-180
-part(map,"FinishIsland",Vector3.new(460,24,340),CFrame.new(0,-12,finishZ),Color3.fromRGB(145,90,52),Enum.Material.Sandstone,true)
-part(map,"FinishFloor",Vector3.new(440,.5,320),CFrame.new(0,.25,finishZ),Color3.fromRGB(105,237,39),Enum.Material.Grass,true)
-border(map,"Finish",Vector3.new(0,0,finishZ),Vector3.new(460,0,340),Color3.fromRGB(146,92,55),Color3.fromRGB(51,255,67))
-endWall(map,"FinishNorth",finishZ+170-6,460,Color3.fromRGB(146,92,55),Color3.fromRGB(51,255,67),LANE_WIDTH)
-endWall(map,"FinishSouth",finishZ-170+6,460,Color3.fromRGB(146,92,55),Color3.fromRGB(51,255,67))
+local lastZone=ZONES[#ZONES]
+endWall(map,"WorldEnd",corridorStart-#ZONES*SECTION_LENGTH+6,LANE_WIDTH,lastZone.Wall,lastZone.Rail)
 
 -- Apply once after construction so decorations derived from other parts are
 -- not scaled twice. Keep heights, materials, labels and the layout unchanged.
@@ -139,6 +135,61 @@ for _,object in ipairs(map:GetDescendants()) do
 		object.CFrame=CFrame.new(position.X*HORIZONTAL_SCALE,position.Y,position.Z*HORIZONTAL_SCALE)*transform.Rotation
 	end
 end
+
+-- Castles use final world dimensions so doors and stairs fit Roblox avatars.
+local function castle(index,levels)
+	local model=Instance.new("Model") model.Name="Castle"..index model.Parent=map
+	local origin=plotPositions[index]*HORIZONTAL_SCALE
+	local stone=Color3.fromRGB(157,148,128)
+	local trim=Color3.fromRGB(107,103,98)
+	local roof=Color3.fromRGB(42,57,70)
+	local function block(name,size,position,color,material,collide)
+		return part(model,name,size,CFrame.new(origin+position),color,material,collide)
+	end
+	block("Foundation",Vector3.new(30,1,24),Vector3.new(0,.75,0),trim,Enum.Material.Cobblestone,true)
+	for floor=0,levels-1 do
+		local y=1.25+floor*10
+		block("BackWall",Vector3.new(28,10,1),Vector3.new(0,y+5,11),stone,Enum.Material.Brick,true)
+		for _,side in ipairs({-1,1}) do
+			block("SideWall",Vector3.new(1,10,22),Vector3.new(side*14,y+5,0),stone,Enum.Material.Brick,true)
+			block("EntranceSide",Vector3.new(10,10,1),Vector3.new(side*9,y+5,-11),stone,Enum.Material.Brick,true)
+			for _,x in ipairs({6,11.5}) do
+				block("TallWindow",Vector3.new(1.6,4,.15),Vector3.new(side*x,y+5,-11.6),Color3.fromRGB(238,197,113),Enum.Material.Neon,false)
+				block("WindowLintel",Vector3.new(2.2,.4,.45),Vector3.new(side*x,y+7.25,-11.65),trim,Enum.Material.Slate,false)
+			end
+		end
+		block("DoorLintel",Vector3.new(8,2,1),Vector3.new(0,y+9,-11),stone,Enum.Material.Brick,true)
+		block("Cornice",Vector3.new(29,.6,1.6),Vector3.new(0,y+10,-11),trim,Enum.Material.Slate,true)
+		if floor>0 then
+			block("UpperFloor",Vector3.new(22,.6,21),Vector3.new(-3,y,0),trim,Enum.Material.WoodPlanks,true)
+			block("StairLanding",Vector3.new(6,.6,3),Vector3.new(11,y,9),trim,Enum.Material.WoodPlanks,true)
+			-- A side stairwell remains open above each staircase.
+			for step=1,16 do
+				block("Stair",Vector3.new(5,.625,1.1),Vector3.new(10.5,y-10+step*.625,-8.5+step),stone,Enum.Material.Cobblestone,true)
+			end
+		end
+	end
+	local top=1.25+levels*10
+	block("Roof",Vector3.new(30,1,24),Vector3.new(0,top+.5,0),roof,Enum.Material.Slate,true)
+	for _,side in ipairs({-1,1}) do
+		local slope=block("PitchedRoof",Vector3.new(16,1,25),Vector3.new(side*7,top+4,0),roof,Enum.Material.Slate,true)
+		slope.CFrame=slope.CFrame*CFrame.Angles(0,0,side*math.rad(-25))
+		for _,z in ipairs({-9,9}) do
+			block("CornerTower",Vector3.new(4,top+3,4),Vector3.new(side*14,(top+3)/2,z),stone,Enum.Material.Cobblestone,true)
+			-- Tapered spires made of small tiers, with a compact part count.
+			for tier=0,7 do
+				local width=6-tier*.7
+				block("Spire",Vector3.new(width,1,width),Vector3.new(side*14,top+3.5+tier,z),roof,Enum.Material.Slate,true)
+			end
+		end
+	end
+	block("HouseBanner",Vector3.new(2.5,4,.2),Vector3.new(0,top-2,-11.7),plotColors[index],Enum.Material.Fabric,false)
+end
+castle(1,1)
+castle(2,1)
+castle(3,2)
+castle(4,3)
+castle(6,4)
 
 Lighting.ClockTime=14 Lighting.Brightness=2.2 Lighting.Ambient=Color3.fromRGB(135,145,165) Lighting.OutdoorAmbient=Color3.fromRGB(160,170,185)
 Workspace.FallenPartsDestroyHeight=-150
