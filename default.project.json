@@ -17,6 +17,16 @@
       },
       "BaseOwnership": {
         "$path": "terrain/BaseOwnership.server.lua"
+      },
+      "MagicGame": {
+        "$path": "magic"
+      }
+    },
+    "StarterPlayer": {
+      "$className": "StarterPlayer",
+      "StarterPlayerScripts": {
+        "$className": "StarterPlayerScripts",
+        "GoldHUD": { "$path": "client/GoldHUD.client.lua" }
       }
     }
   }
