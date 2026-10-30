@@ -1,11 +1,12 @@
 local Players=game:GetService("Players")
 local RunService=game:GetService("RunService")
-local Config=require(script.Config)
-local Store=require(script.ProfileStore)
-local Visual=require(script.CreatureVisual)
-local map=workspace:WaitForChild("FootballTerrain")
-while not map:GetAttribute("Ready") do map:GetAttributeChangedSignal("Ready"):Wait() end
-local floor=map:WaitForChild("SPACEFloor")
+local Config=require(script.Parent:WaitForChild("Config"))
+local Store=require(script.Parent:WaitForChild("ProfileStore"))
+local Visual=require(script.Parent:WaitForChild("CreatureVisual"))
+workspace:SetAttribute("MagicStatus","Aguardando terreno")
+local map=assert(workspace:WaitForChild("FootballTerrain",30),"Terreno ausente")
+local floor=assert(map:WaitForChild("SPACEFloor",30),"SPACEFloor ausente")
+assert(map:WaitForChild("Castle6",30),"Castelos ausentes")
 local origin=CFrame.new(floor.Position+Vector3.new(0,2.2,0))
 local state="AVAILABLE"
 local wild,carrier,prompt
@@ -176,3 +177,5 @@ game:BindToClose(function()
  local deadline=os.clock()+25
  while pending>0 and os.clock()<deadline do task.wait(.1) end
 end)
+workspace:SetAttribute("MagicStatus","Pronto")
+return true

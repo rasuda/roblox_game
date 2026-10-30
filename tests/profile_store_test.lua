@@ -45,7 +45,7 @@ assert(store().Load(c)==nil and c.kicked,"Failed load must not create a zero pro
 failRead=false record={Schema=99,Gold=999,HasCreature=true}
 assert(store().Load(player(3))==nil and record.Gold==999,"Unsupported schema must not be erased")
 print("PASS: new profile, idempotent save, session lock, rejoin, save/load failure, stale session, schema protection")
-for _,path in ipairs({"terrain/TerrainBuilder.server.lua","terrain/BaseOwnership.server.lua","magic/init.server.lua","magic/CreatureVisual.lua","client/GoldHUD.client.lua"}) do
+for _,path in ipairs({"terrain/TerrainBuilder.server.lua","terrain/BaseOwnership.server.lua","magic/Game.lua","magic/Bootstrap.server.lua","magic/CreatureVisual.lua","client/GoldHUD.client.lua"}) do
  assert(loadfile(path))
 end
 print("PASS: syntax for all game scripts")

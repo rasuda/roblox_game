@@ -28,9 +28,14 @@ local function refresh()
  elseif player:GetAttribute("CarryingCreature") then hint.Text="Leve o Pelúcio para dentro do seu castelo."
  elseif player:GetAttribute("HasCreature") then hint.Text="Seu Pelúcio está no castelo."
  else hint.Text=player:GetAttribute("CreatureHint") or "Busque o Pelúcio na última área preta." end
- saving.Text=player:GetAttribute("SaveStatus") or "Carregando..."
+ saving.Text=player:GetAttribute("SaveStatus") or workspace:GetAttribute("MagicStatus") or "Iniciando servidor..."
+ if workspace:GetAttribute("MagicError") then
+  hint.Text=workspace:GetAttribute("MagicError")
+ end
 end
 for _,attribute in ipairs({"Gold","IncomePerSecond","DataReady","WaitingForBase","CarryingCreature","HasCreature","CreatureHint","SaveStatus"}) do
  player:GetAttributeChangedSignal(attribute):Connect(refresh)
 end
 refresh()
+workspace:GetAttributeChangedSignal("MagicStatus"):Connect(refresh)
+workspace:GetAttributeChangedSignal("MagicError"):Connect(refresh)

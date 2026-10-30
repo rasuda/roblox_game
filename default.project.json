@@ -19,7 +19,12 @@
         "$path": "terrain/BaseOwnership.server.lua"
       },
       "MagicGame": {
-        "$path": "magic"
+        "$className": "Folder",
+        "Bootstrap": { "$path": "magic/Bootstrap.server.lua" },
+        "Game": { "$path": "magic/Game.lua" },
+        "Config": { "$path": "magic/Config.lua" },
+        "ProfileStore": { "$path": "magic/ProfileStore.lua" },
+        "CreatureVisual": { "$path": "magic/CreatureVisual.lua" }
       }
     },
     "StarterPlayer": {
